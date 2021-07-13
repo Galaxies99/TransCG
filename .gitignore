@@ -1,7 +1,9 @@
 # User-defined files
-.history
+.history/
 .DS_Store
 */.DS_Store
+stats/
+data/
 
 
 # Byte-compiled / optimized / DLL files
