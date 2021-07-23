@@ -23,8 +23,9 @@ class TransparentDataset(Dataset):
         perspective_id = id - (scene_id - 1) * self.perspective_per_scene
         base_path = os.path.join(self.data_dir, 'scene{}'.format(scene_id), '{}'.format(perspective_id))
         rgb = np.array(Image.open(os.path.join(base_path, 'rgb1.png'), dtype = np.float32)) / 255.0
-        depth = np.array(Image.open(os.path.join(base_path, 'depth1-gt.png')))
-        return rgb, depth
+        depth = np.array(Image.open(os.path.join(base_path, 'depth.png')))
+        depth_gt = np.array(Image.open(os.path.join(base_path, 'depth1-gt.png')))
+        return rgb, depth, depth_gt
     
     def __len__(self):
         return self.perspective_per_scene * self.scene_num
