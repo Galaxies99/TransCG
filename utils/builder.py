@@ -1,5 +1,5 @@
 import os
-
+from ..dataset import TransparentDataset
 
 class ConfigBuilder(object):
     '''
@@ -122,8 +122,7 @@ class ConfigBuilder(object):
         '''
         if dataset_params is None:
             dataset_params = self.params.get('dataset', {})
-        # TODO: finish dataset and complete the dataset builder.
-        return None
+        return TransparentDataset(split = split, **dataset_params)
     
     def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, num_workers = None, shuffle = None):
         '''
