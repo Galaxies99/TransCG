@@ -2,15 +2,18 @@ import os
 import yaml
 import torch
 import logging
+import warnings
 import argparse
+import torch.nn as nn
 from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
+from models.criterion import MaskedTransparentLoss, Metrics
 
 
 logging.setLoggerClass(ColoredLogger)
 logger = logging.getLogger(__name__)
-
+warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -30,8 +33,15 @@ builder = ConfigBuilder(**cfg_params)
 logger.info('Building models ...')
 
 model = builder.get_model()
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-model.to(device)
+
+if builder.multigpu():
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+else:
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if device == torch.device('cpu'):
+        raise EnvironmentError('No GPUs, cannot initialize multigpu training.')
+    model.to(device)
 
 logger.info('Building dataloaders ...')
 train_dataloader = builder.get_dataloader(split = 'train')
@@ -54,6 +64,12 @@ if os.path.isfile(checkpoint_file):
         lr_scheduler.last_epoch = start_epoch - 1
     logger.info("Checkpoint {} (epoch {}) loaded.".format(checkpoint_file, start_epoch))
 
+if builder.multigpu():
+    model = nn.DataParallel(model)
+
+criterion = MaskedTransparentLoss()
+metrics = Metrics()
+
 
 def train_one_epoch(epoch):
     logger.info('Start training process in epoch {}.'.format(epoch + 1))
@@ -63,13 +79,13 @@ def train_one_epoch(epoch):
         for data in pbar:
             optimizer.zero_grad()
             rgb, depth, depth_gt, depth_gt_mask, scene_mask = data
-            rgb = x.to(device)
+            rgb = rgb.to(device)
             depth = depth.to(device)
             depth_gt = depth_gt.to(device)
             depth_gt_mask = depth_gt_mask.to(device)
             scene_mask = scene_mask.to(device)
             res = model(rgb, depth)
-            loss = model.loss(res, depth_gt, depth_gt_mask, scene_mask)
+            loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
             loss.backward()
             optimizer.step()
             pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.mean().item()))
@@ -81,22 +97,33 @@ def train_one_epoch(epoch):
 def test_one_epoch(epoch):
     logger.info('Start testing process in epoch {}.'.format(epoch + 1))
     model.eval()
+    metrics.clear()
     losses = []
     with tqdm(test_dataloader) as pbar:
         for data in pbar:
             rgb, depth, depth_gt, depth_gt_mask, scene_mask = data
-            rgb = x.to(device)
+            rgb = rgb.to(device)
             depth = depth.to(device)
             depth_gt = depth_gt.to(device)
             depth_gt_mask = depth_gt_mask.to(device)
             scene_mask = scene_mask.to(device)
             with torch.no_grad():
                 res = model(rgb, depth)
-                loss = model.loss(res, depth_gt, depth_gt_mask, scene_mask)
-            pbar.set_description('Epoch {}, loss: {:.8f}, accuracy: {:.6f}'.format(epoch + 1, loss.mean().item()))
+                loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
+                metrics.add_record(res, depth_gt, depth_gt_mask, scene_mask)
+            pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.mean().item()))
             losses.append(loss.mean().item())
     mean_loss = torch.stack(losses).mean()
     logger.info('Finish testing process in epoch {}, mean testing loss: {:.8f}.'.format(epoch + 1, mean_loss))
+    metrics_result = metrics.final()
+    logger.info('Metrics: ')
+    logger.info('MSE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[1], metrics_result[0]))
+    logger.info('RMSE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[3], metrics_result[2]))
+    logger.info('REL (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[5], metrics_result[4]))
+    logger.info('MAE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[7], metrics_result[6]))
+    logger.info('Threshold 1.05 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[9], metrics_result[8]))
+    logger.info('Threshold 1.10 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[11], metrics_result[10]))
+    logger.info('Threshold 1.25 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[13], metrics_result[12]))
     return mean_loss
 
 
@@ -114,7 +141,7 @@ def train(start_epoch):
             min_loss_epoch = epoch + 1
             save_dict = {
                 'epoch': epoch + 1,
-                'model_state_dict': model.state_dict(),
+                'model_state_dict': model.module.state_dict() if builder.multigpu() else model.state_dict(),
             }
             torch.save(save_dict, os.path.join(stats_dir, 'checkpoint.tar'))
     logger.info('Training Finished. Max accuracy: {:.6f}, in epoch {}'.format(min_loss, min_loss_epoch))

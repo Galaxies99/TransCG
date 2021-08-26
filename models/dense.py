@@ -25,12 +25,13 @@ class DenseBlock(nn.Module):
                 single_layer.append(nn.BatchNorm2d(k * 4))
             single_layer.append(nn.ReLU(True))
             conv2 = nn.Conv2d(k * 4, k, kernel_size = 3, stride = 1, padding = 1)
-            xavier_init(conv1)
+            xavier_init(conv2)
             single_layer.append(conv2)
             if with_bn:
-                single_layer.append(nn.BatchNorm2d(k * 4))
+                single_layer.append(nn.BatchNorm2d(k))
             single_layer.append(nn.ReLU(True))
             self.layers.append(nn.Sequential(*single_layer))
+        self.layers = nn.ModuleList(self.layers)
     
     def forward(self, x):
         h = x

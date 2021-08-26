@@ -1,6 +1,6 @@
 import os
-from dataset.transparent_grasp import TransparentDataset
-from model.DFNet import DFNet
+from dataset.transparent_grasp import TransparentGrasp
+from models.DFNet import DFNet
 
 class ConfigBuilder(object):
     '''
@@ -31,13 +31,13 @@ class ConfigBuilder(object):
         '''
         if model_params is None:
             model_params = self.params.get('model', {})
-        name = model_params.get('type', 'DFNet')
+        type = model_params.get('type', 'DFNet')
         params = model_params.get('params', {})
         if type == 'DFNet':
             model = DFNet(**params)
         else:
             raise NotImplementedError('Invalid model type.')
-        return None
+        return model
     
     def get_optimizer(self, model, optimizer_params = None):
         '''
@@ -128,7 +128,7 @@ class ConfigBuilder(object):
         '''
         if dataset_params is None:
             dataset_params = self.params.get('dataset', {"data_dir": "data"})
-        return TransparentDataset(split = split, **dataset_params)
+        return TransparentGrasp(split = split, **dataset_params)
     
     def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, num_workers = None, shuffle = None):
         '''
@@ -191,3 +191,6 @@ class ConfigBuilder(object):
         if os.path.exists(stats_res_dir) == False:
             os.makedirs(stats_res_dir)
         return stats_res_dir
+    
+    def multigpu(self):
+        return self.params.get('trainer', {}).get('multigpu', False)

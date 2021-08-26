@@ -4,10 +4,10 @@ import torch.nn.functional as F
 
 class DenseUpsamplingConvolution(nn.Module):
     def __init__(self, inplanes, planes, upscale_factor = 2):
-        super(DUC, self).__init__()
+        super(DenseUpsamplingConvolution, self).__init__()
         self.layer = nn.Sequential(
-            nn.Conv2d(inplanes, planes, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(planes),
+            nn.Conv2d(inplanes, planes * upscale_factor * upscale_factor, kernel_size = 3, stride = 1, padding = 1),
+            nn.BatchNorm2d(planes * upscale_factor * upscale_factor),
             nn.ReLU(True)
         )
         self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
