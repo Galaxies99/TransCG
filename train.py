@@ -4,11 +4,13 @@ import torch
 import logging
 import warnings
 import argparse
+import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
-from models.criterion import MaskedTransparentLoss, Metrics
+from utils.criterion import MaskedTransparentLoss, Metrics
+from time import perf_counter
 
 
 logging.setLoggerClass(ColoredLogger)
@@ -90,7 +92,7 @@ def train_one_epoch(epoch):
             optimizer.step()
             pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.mean().item()))
             losses.append(loss.mean().item())
-    mean_loss = torch.stack(losses).mean()
+    mean_loss = np.stack(losses).mean()
     logger.info('Finish training process in epoch {}, mean training loss: {:.8f}'.format(epoch + 1, mean_loss))
 
 
@@ -108,12 +110,14 @@ def test_one_epoch(epoch):
             depth_gt_mask = depth_gt_mask.to(device)
             scene_mask = scene_mask.to(device)
             with torch.no_grad():
+                time_start = perf_counter()
                 res = model(rgb, depth)
+                time_end = perf_counter()
                 loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
                 metrics.add_record(res, depth_gt, depth_gt_mask, scene_mask)
-            pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.mean().item()))
+            pbar.set_description('Epoch {}, loss: {:.8f}, model time: {:.4f}'.format(epoch + 1, loss.mean().item(), time_end - time_start))
             losses.append(loss.mean().item())
-    mean_loss = torch.stack(losses).mean()
+    mean_loss = np.stack(losses).mean()
     logger.info('Finish testing process in epoch {}, mean testing loss: {:.8f}.'.format(epoch + 1, mean_loss))
     metrics_result = metrics.final()
     logger.info('Metrics: ')
