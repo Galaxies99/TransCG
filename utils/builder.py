@@ -1,5 +1,6 @@
 import os
-from ..dataset import TransparentDataset
+from dataset.transparent_grasp import TransparentDataset
+from model.DFNet import DFNet
 
 class ConfigBuilder(object):
     '''
@@ -30,7 +31,12 @@ class ConfigBuilder(object):
         '''
         if model_params is None:
             model_params = self.params.get('model', {})
-        # TODO: finish models and complete the model builder.
+        name = model_params.get('type', 'DFNet')
+        params = model_params.get('params', {})
+        if type == 'DFNet':
+            model = DFNet(**params)
+        else:
+            raise NotImplementedError('Invalid model type.')
         return None
     
     def get_optimizer(self, model, optimizer_params = None):
@@ -121,7 +127,7 @@ class ConfigBuilder(object):
         A torch.utils.data.Dataset item.
         '''
         if dataset_params is None:
-            dataset_params = self.params.get('dataset', {})
+            dataset_params = self.params.get('dataset', {"data_dir": "data"})
         return TransparentDataset(split = split, **dataset_params)
     
     def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, num_workers = None, shuffle = None):

@@ -64,11 +64,14 @@ def train_one_epoch(epoch):
     with tqdm(train_dataloader) as pbar:
         for data in pbar:
             optimizer.zero_grad()
-            x, labels = data
-            x = x.to(device)
-            labels = labels.to(device)
-            res = model(x)
-            loss = model.loss(res, labels.view(-1))
+            rgb, depth, depth_gt, depth_gt_mask, scene_mask = data
+            rgb = x.to(device)
+            depth = depth.to(device)
+            depth_gt = depth_gt.to(device)
+            depth_gt_mask = depth_gt_mask.to(device)
+            scene_mask = scene_mask.to(device)
+            res = model(rgb, depth)
+            loss = model.loss(res, depth_gt, depth_gt_mask, scene_mask)
             loss.backward()
             optimizer.step()
             pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.mean().item()))
@@ -83,12 +86,15 @@ def test_one_epoch(epoch):
     losses = []
     with tqdm(test_dataloader) as pbar:
         for data in pbar:
-            x, labels = data
-            x = x.to(device)
-            labels = labels.to(device)
+            rgb, depth, depth_gt, depth_gt_mask, scene_mask = data
+            rgb = x.to(device)
+            depth = depth.to(device)
+            depth_gt = depth_gt.to(device)
+            depth_gt_mask = depth_gt_mask.to(device)
+            scene_mask = scene_mask.to(device)
             with torch.no_grad():
-                res = model(x)
-                loss = model.loss(res, labels.view(-1))
+                res = model(rgb, depth)
+                loss = model.loss(res, depth_gt, depth_gt_mask, scene_mask)
             pbar.set_description('Epoch {}, loss: {:.8f}, accuracy: {:.6f}'.format(epoch + 1, loss.mean().item()))
             losses.append(loss.mean().item())
     mean_loss = torch.stack(losses).mean()
