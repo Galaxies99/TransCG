@@ -188,4 +188,6 @@ class ConfigBuilder(object):
         stats_dir = stats_params.get('stats_dir', 'stats')
         stats_exper = stats_params.get('stats_exper', 'default')
         stats_res_dir = os.path.join(stats_dir, stats_exper)
+        if os.path.exists(stats_res_dir) == False:
+            os.makedirs(stats_res_dir)
         return stats_res_dir

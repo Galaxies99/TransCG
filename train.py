@@ -45,8 +45,6 @@ logger.info('Checking checkpoints ...')
 start_epoch = 0
 max_epoch = builder.get_max_epoch()
 stats_dir = builder.get_stats_dir()
-if os.path.exists(stats_dir) == False:
-    os.makedirs(stats_dir)
 checkpoint_file = os.path.join(stats_dir, 'checkpoint.tar')
 if os.path.isfile(checkpoint_file):
     checkpoint = torch.load(checkpoint_file)

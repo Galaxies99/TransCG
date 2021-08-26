@@ -1,0 +1,25 @@
+"model":
+  "type": "DFNet"
+  "params":
+    "in_channels": 4
+    "hidden_channels": 64
+    "L": 5
+    "k": 12
+"optimizer":
+  "type": "AdamW"
+  "params":
+    "lr": 0.01
+"lr_scheduler":
+  "type": "MultiStepLR"
+    "milestones": [10, 20, 30]
+    "gamma": 0.1
+"dataset":
+  "data_dir": "data"
+"trainer":
+  "batch_size": 4
+  "num_workers": 16
+  "shuffle": True
+  "max_epoch": 40
+"stats":
+  "stats_dir": "stats"
+  "stats_exper": "default"
