@@ -1,8 +1,17 @@
+"""
+Dense upsampling convolution layer.
+
+Author: Hongjie Fang.
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class DenseUpsamplingConvolution(nn.Module):
+    """
+    Dense upsampling convolution module.
+    """
     def __init__(self, inplanes, planes, upscale_factor = 2):
         super(DenseUpsamplingConvolution, self).__init__()
         self.layer = nn.Sequential(

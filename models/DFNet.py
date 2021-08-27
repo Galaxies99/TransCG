@@ -1,3 +1,8 @@
+"""
+Depth Filler Network.
+
+Author: Hongjie Fang.
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,6 +12,9 @@ from .duc import DenseUpsamplingConvolution
 
 
 class DFNet(nn.Module):
+    """
+    Depth Filler Network (DFNet).
+    """
     def __init__(self, in_channels = 4, hidden_channels = 64, L = 5, k = 12, **kwargs):
         super(DFNet, self).__init__()
         self.in_channels = in_channels

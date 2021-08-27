@@ -19,6 +19,8 @@
 
 "dataset":
   "data_dir": "data"
+  "use_augmentation": True
+  "augmentation_probability": 0.8
 
 "trainer":
   "batch_size": 4

@@ -1,5 +1,9 @@
 '''
-From mmcv lib (https://github.com/open-mmlab/mmcv)
+Weight Initialization.
+
+Author: Authors from [mmcv] repository.
+Ref:
+    1. [mmcv] repository: https://github.com/open-mmlab/mmcv.
 '''
 import torch.nn as nn
 

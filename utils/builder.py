@@ -1,24 +1,38 @@
+"""
+Configuration builder.
+
+Authors: Hongjie Fang.
+"""
 import os
 from dataset.transparent_grasp import TransparentGrasp
 from models.DFNet import DFNet
 
+
 class ConfigBuilder(object):
-    '''
-    Configuration Builder
-    '''
+    """
+    Configuration Builder.
+
+    Features includes:
+        - build model from configuration;
+        - build optimizer from configuration;
+        - build learning rate scheduler from configuration;
+        - build dataset & dataloader from configuration;
+        - build statistics directory from configuration;
+        - fetch training parameters (e.g., max_epoch, multigpu) from configuration.
+    """
     def __init__(self, **params):
-        '''
+        """
         Set the default configuration for the configuration builder.
 
         Parameters
         ----------
         params: the configuration parameters.
-        '''
+        """
         super(ConfigBuilder, self).__init__()
         self.params = params
     
     def get_model(self, model_params = None):
-        '''
+        """
         Get the model from configuration.
 
         Parameters
@@ -28,7 +42,7 @@ class ConfigBuilder(object):
         Returns
         -------
         A model, which is usually a torch.nn.Module object.
-        '''
+        """
         if model_params is None:
             model_params = self.params.get('model', {})
         type = model_params.get('type', 'DFNet')
@@ -40,7 +54,7 @@ class ConfigBuilder(object):
         return model
     
     def get_optimizer(self, model, optimizer_params = None):
-        '''
+        """
         Get the optimizer from configuration.
         
         Parameters
@@ -51,7 +65,7 @@ class ConfigBuilder(object):
         Returns
         -------
         An optimizer for the given model.
-        '''
+        """
         from torch.optim import SGD, ASGD, Adagrad, Adamax, Adadelta, Adam, AdamW, RMSprop
         if optimizer_params is None:
             optimizer_params = self.params.get('optimizer', {})
@@ -78,7 +92,7 @@ class ConfigBuilder(object):
         return optimizer
     
     def get_lr_scheduler(self, optimizer, lr_scheduler_params = None):
-        '''
+        """
         Get the learning rate scheduler from configuration.
         
         Parameters
@@ -89,7 +103,7 @@ class ConfigBuilder(object):
         Returns
         -------
         A learning rate scheduler for the given optimizer.
-        '''
+        """
         from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR, CyclicLR, CosineAnnealingLR, LambdaLR, StepLR
         if lr_scheduler_params is None:
             lr_scheduler_params = self.params.get('lr_scheduler', {})
@@ -114,7 +128,7 @@ class ConfigBuilder(object):
         return scheduler
     
     def get_dataset(self, dataset_params = None, split = 'train'):
-        '''
+        """
         Get the dataset from configuration.
 
         Parameters
@@ -125,13 +139,13 @@ class ConfigBuilder(object):
         Returns
         -------
         A torch.utils.data.Dataset item.
-        '''
+        """
         if dataset_params is None:
             dataset_params = self.params.get('dataset', {"data_dir": "data"})
         return TransparentGrasp(split = split, **dataset_params)
     
     def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, num_workers = None, shuffle = None):
-        '''
+        """
         Get the dataloader from configuration.
 
         Parameters
@@ -145,7 +159,7 @@ class ConfigBuilder(object):
         Returns
         -------
         A torch.utils.data.DataLoader item.
-        '''
+        """
         from torch.utils.data import DataLoader
         if batch_size is None:
             batch_size = self.params.get('trainer', {}).get('batch_size', 4)
@@ -162,17 +176,17 @@ class ConfigBuilder(object):
         )
 
     def get_max_epoch(self):
-        '''
+        """
         Get the max epoch from configuration.
 
         Returns
         -------
         An integer, which is the max epoch (default: 50).
-        '''
+        """
         return self.params.get('trainer', {}).get('max_epoch', 50)
     
     def get_stats_dir(self, stats_params = None):
-        '''
+        """
         Get the statistics directory from configuration.
 
         Parameters
@@ -182,7 +196,7 @@ class ConfigBuilder(object):
         Returns
         -------
         A string, the statistics directory.
-        '''
+        """
         if stats_params is None:
             stats_params = self.params.get('stats', {})
         stats_dir = stats_params.get('stats_dir', 'stats')
@@ -193,4 +207,11 @@ class ConfigBuilder(object):
         return stats_res_dir
     
     def multigpu(self):
+        """
+        Get the multigpu settings from configuration.
+
+        Returns
+        -------
+        A boolean value, whether to use the multigpu training/testing (default: False).
+        """
         return self.params.get('trainer', {}).get('multigpu', False)

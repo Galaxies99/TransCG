@@ -1,3 +1,8 @@
+"""
+Transparent Grasp Dataset.
+
+Author: Hongjie Fang.
+"""
 import os
 import json
 import torch
@@ -5,6 +10,7 @@ import numpy as np
 from PIL import Image
 import torch.nn as nn
 from torch.utils.data import Dataset
+from utils.data_preparation import process_data
 
 
 class TransparentGrasp(Dataset):
@@ -24,6 +30,7 @@ class TransparentGrasp(Dataset):
         if split not in ['train', 'test']:
             raise AttributeError('Invalid split option.')
         self.data_dir = data_dir
+        self.split = split
         with open(os.path.join(self.data_dir, 'metadata.json'), 'r') as fp:
             self.dataset_metadata = json.load(fp)
         self.scene_num = self.dataset_metadata['total_scenes']
@@ -52,20 +59,16 @@ class TransparentGrasp(Dataset):
                 ])
         # Integrity double-check
         assert len(self.sample_info) == self.total_samples, "Error in total samples, expect {} samples, found {} samples.".format(self.total_samples, len(self.sample_info))
+        self.use_aug = kwargs.get('use_augmentation', True)
+        self.aug_prob = kwargs.get('augmentation_probability', 0.8)
 
     def __getitem__(self, id):
         img_path, camera_type, scene_type = self.sample_info[id]
-        rgb = np.array(Image.open(os.path.join(img_path, 'rgb{}.png'.format(camera_type))), dtype = np.float32) / 255.0
-        rgb = rgb.transpose(2, 0, 1) # HWC -> CHW
+        rgb = np.array(Image.open(os.path.join(img_path, 'rgb{}.png'.format(camera_type))), dtype = np.float32)
         depth = np.array(Image.open(os.path.join(img_path, 'depth{}.png'.format(camera_type))), dtype = np.float32)
-        depth = depth / (1000 if camera_type == 1 else 4000) # depth sensor scaling
-        depth = np.where(depth > 10, 1, depth / 10)
         depth_gt = np.array(Image.open(os.path.join(img_path, 'depth{}-gt.png'.format(camera_type))), dtype = np.float32)
-        depth_gt = depth_gt / (1000 if camera_type == 1 else 4000) # depth sensor scaling
-        depth_gt = np.where(depth_gt > 10, 1, depth_gt / 10)
         depth_gt_mask = np.array(Image.open(os.path.join(img_path, 'depth{}-gt-mask.png'.format(camera_type))), dtype = np.bool)
-        scene_mask = np.array([1 if scene_type == 'cluttered' else 0], dtype = np.bool)
-        return torch.FloatTensor(rgb), torch.FloatTensor(depth), torch.FloatTensor(depth_gt), torch.BoolTensor(depth_gt_mask), torch.BoolTensor(scene_mask)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type, camera_type, split = self.split, use_aug = self.use_aug, aug_prob = self.aug_prob)
     
     def __len__(self):
         return self.total_samples

@@ -1,3 +1,8 @@
+"""
+Training scripts.
+
+Authors: Hongjie Fang.
+"""
 import os
 import yaml
 import torch
@@ -128,7 +133,7 @@ def test_one_epoch(epoch):
     logger.info('Threshold 1.05 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[9], metrics_result[8]))
     logger.info('Threshold 1.10 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[11], metrics_result[10]))
     logger.info('Threshold 1.25 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[13], metrics_result[12]))
-    return mean_loss
+    return mean_loss, metrics_result
 
 
 def train(start_epoch):
@@ -137,18 +142,21 @@ def train(start_epoch):
     for epoch in range(start_epoch, max_epoch):
         logger.info('--> Epoch {}/{}'.format(epoch + 1, max_epoch))
         train_one_epoch(epoch)
-        loss = test_one_epoch(epoch)
+        loss, metrics_result = test_one_epoch(epoch)
         if lr_scheduler is not None:
             lr_scheduler.step()
+        save_dict = {
+            'epoch': epoch + 1,
+            'model_state_dict': model.module.state_dict() if builder.multigpu() else model.state_dict(),
+            'mean_loss': loss,
+            'metrics': list(metrics_result)
+        }
+        torch.save(save_dict, os.path.join(stats_dir, 'checkpoint-ep{}.tar'.format(epoch)))
         if loss < min_loss:
             min_loss = loss
             min_loss_epoch = epoch + 1
-            save_dict = {
-                'epoch': epoch + 1,
-                'model_state_dict': model.module.state_dict() if builder.multigpu() else model.state_dict(),
-            }
-            torch.save(save_dict, os.path.join(stats_dir, 'checkpoint.tar'))
-    logger.info('Training Finished. Max accuracy: {:.6f}, in epoch {}'.format(min_loss, min_loss_epoch))
+            torch.save(save_dict, os.path.join(stats_dir, 'checkpoint.tar'.format(epoch)))
+    logger.info('Training Finished. Min testing loss: {:.6f}, in epoch {}'.format(min_loss, min_loss_epoch))
 
 
 if __name__ == '__main__':
