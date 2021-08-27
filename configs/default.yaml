@@ -24,6 +24,7 @@
 
 "trainer":
   "batch_size": 4
+  "test_batch_size": 1
   "multigpu": True
   "num_workers": 16
   "shuffle": True

@@ -162,7 +162,10 @@ class ConfigBuilder(object):
         """
         from torch.utils.data import DataLoader
         if batch_size is None:
-            batch_size = self.params.get('trainer', {}).get('batch_size', 4)
+            if split == 'train':
+                batch_size = self.params.get('trainer', {}).get('batch_size', 4)
+            else:
+                batch_size = self.params.get('trainer', {}).get('test_batch_size', 1)
         if num_workers is None:
             num_workers = self.params.get('trainer', {}).get('num_workers', 16)
         if shuffle is None:
