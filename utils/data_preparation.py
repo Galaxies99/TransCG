@@ -83,7 +83,7 @@ def add_noise(image, level = 0.1):
     return noisy.astype('uint8')
 
 
-def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 1, split = 'train', use_aug = True, aug_prob = 0.8):
+def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 1, split = 'train', use_aug = True, rgb_aug_prob = 0.8, **kwargs):
     """
     Process images and perform data augmentation.
 
@@ -97,7 +97,7 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     camera_type: int in [1, 2], optional, default: 1, the camera type;
     split: str in ['train', 'test'], optional, default: 'train', the split of the dataset;
     use_aug: bool, optional, default: True, whether use data augmentation;
-    aug_prob: float, optional, default: 0.8, the data augmentation probability (only applies when use_aug is set to True).
+    rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True).
 
     Returns
     -------
@@ -112,9 +112,30 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     depth_gt = np.where(depth_gt > 10, 1, depth_gt / 10)
 
     # RGB augmentation.
-    if split == 'train' and use_aug and np.random.rand(1) > 1 - aug_prob:
+    if split == 'train' and use_aug and np.random.rand(1) > 1 - rgb_aug_prob:
         rgb = chromatic_transform(rgb)
         rgb = add_noise(rgb)
+    
+    # Geometric augmentation
+    if split == 'train' and use_aug:
+        has_aug = False
+        if np.random.rand(1) > 0.5:
+            has_aug = True
+            rgb = np.flip(rgb, axis = 0)
+            depth = np.flip(depth, axis = 0)
+            depth_gt = np.flip(depth_gt, axis = 0)
+            depth_gt_mask = np.flip(depth_gt_mask, axis = 0)
+        if np.random.rand(1) > 0.5:
+            has_aug = True
+            rgb = np.flip(rgb, axis = 1)
+            depth = np.flip(depth, axis = 1)
+            depth_gt = np.flip(depth_gt, axis = 1)
+            depth_gt_mask = np.flip(depth_gt_mask, axis = 1)
+        if has_aug:
+            rgb = rgb.copy()
+            depth = depth.copy()
+            depth_gt = depth_gt.copy()
+            depth_gt_mask = depth_gt_mask.copy()
 
     # RGB normalization
     rgb = rgb / 255.0
