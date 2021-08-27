@@ -133,11 +133,11 @@ def test_one_epoch(epoch):
     logger.info('Threshold 1.05 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[9], metrics_result[8]))
     logger.info('Threshold 1.10 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[11], metrics_result[10]))
     logger.info('Threshold 1.25 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[13], metrics_result[12]))
-    return mean_loss, metrics_result
+    return mean_loss, list(metrics_result)
 
 
 def train(start_epoch):
-    min_loss = test_one_epoch(start_epoch - 1)
+    min_loss, _ = test_one_epoch(start_epoch - 1)
     min_loss_epoch = start_epoch
     for epoch in range(start_epoch, max_epoch):
         logger.info('--> Epoch {}/{}'.format(epoch + 1, max_epoch))
@@ -149,7 +149,7 @@ def train(start_epoch):
             'epoch': epoch + 1,
             'model_state_dict': model.module.state_dict() if builder.multigpu() else model.state_dict(),
             'mean_loss': loss,
-            'metrics': list(metrics_result)
+            'metrics': metrics_result
         }
         torch.save(save_dict, os.path.join(stats_dir, 'checkpoint-ep{}.tar'.format(epoch)))
         if loss < min_loss:
