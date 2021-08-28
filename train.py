@@ -120,7 +120,7 @@ def test_one_epoch(epoch):
                 time_end = perf_counter()
                 loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
                 metrics.add_record(res, depth_gt, depth_gt_mask, scene_mask)
-            pbar.set_description('Epoch {}, loss: {:.8f}, model time: {:.4f}'.format(epoch + 1, loss.mean().item(), time_end - time_start))
+            pbar.set_description('Epoch {}, loss: {:.8f}, model time: {:.4f}s'.format(epoch + 1, loss.mean().item(), time_end - time_start))
             losses.append(loss.mean().item())
     mean_loss = np.stack(losses).mean()
     logger.info('Finish testing process in epoch {}, mean testing loss: {:.8f}.'.format(epoch + 1, mean_loss))
