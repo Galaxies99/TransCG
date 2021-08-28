@@ -29,6 +29,7 @@
   "num_workers": 16
   "shuffle": True
   "max_epoch": 40
+  "loss_type": "custom_masked_mse_loss"
 
 "stats":
   "stats_dir": "stats"

@@ -8,83 +8,112 @@ import torch.nn as nn
 import numpy as np
 
 
-class MSELoss(nn.Module):
+class Loss(nn.Module):
     """
-    MSE loss.
+    Various type of loss functions.
     """
-    def __init__(self, **kwargs):
-        super(MSELoss, self).__init__()
-        self.epsilon = kwargs.get('epsilon', 1e-10)
+    def __init__(self, *args, **kwargs):
+        super(Loss, self).__init__()
+        self.epsilon = kwargs.get('epsilon', 1e-8)
+        self.l2_loss = self.mse_loss
+        self.masked_l2_loss = self.masked_mse_loss
+        self.custom_masked_l2_loss = self.custom_masked_mse_loss
     
-    def forward(self, pred, gt, gt_mask, use_gt_mask):
+    def mse_loss(self, pred, gt, *args, **kwargs):
         """
         MSE loss.
 
         Parameters
         ----------
-        pred: NHW
-        gt: NHW
-        gt_mask: NHW
-        use_gt_mask: N
+        pred: tensor of shape NHW, the prediction;
+        gt: tensor of shape NHW, the ground-truth.
         """
         mask = torch.where(gt < self.epsilon, False, True)
         delta = (pred - gt) ** 2
         loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
         return torch.mean(loss)
-
-
-class MaskedMSELoss(nn.Module):
-    """
-    Masked MSE loss.
-    """
-    def __init__(self, **kwargs):
-        super(MaskedMSELoss, self).__init__()
-        self.epsilon = kwargs.get('epsilon', 1e-10)
     
-    def forward(self, pred, gt, gt_mask, use_gt_mask):
+    def masked_mse_loss(self, pred, gt, gt_mask, *args, **kwargs):
         """
         Masked MSE loss.
         
         Parameters
         ----------
-        pred: NHW
-        gt: NHW
-        gt_mask: NHW
-        use_gt_mask: N
+        pred: tensor of shape NHW, the prediction;
+        gt: tensor of shape NHW, the ground-truth;
+        gt_mask: tensor of shape NHW, the ground-truth mask.
         """
         zero_mask = torch.where(gt < self.epsilon, False, True)
         mask = gt_mask & zero_mask
         delta = (pred - gt) ** 2
         loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
         return torch.mean(loss)
-
-
-class MaskedTransparentLoss(nn.Module):
-    """
-    Custom loss: masked transparent loss.
-        - For cluttered scenes: MSE loss;
-        - For isolated scenes: masked MSE loss.
-    """
-    def __init__(self, **kwargs):
-        super(MaskedTransparentLoss, self).__init__()
-        self.epsilon = kwargs.get('epsilon', 1e-10)
     
-    def forward(self, pred, gt, gt_mask, use_gt_mask):
+    def custom_masked_mse_loss(self, pred, gt, gt_mask, use_gt_mask, *args, **kwargs):
         """
-        Masked transparent loss.
+        Custom masked MSE loss.
         
         Parameters
         ----------
-        pred: NHW
-        gt: NHW
-        gt_mask: NHW
-        use_gt_mask: N
+        pred: tensor of shape NHW, the prediction;
+        gt: tensor of shape NHW, the ground-truth;
+        gt_mask: tensor of shape NHW, the ground-truth mask;
+        use_gt_mask: tensor of shape N, whether to use the ground-truth mask.
         """
         zero_mask = torch.where(gt < self.epsilon, False, True)
         _, use_gt_mask = torch.broadcast_tensors(gt_mask.transpose(0, 2), use_gt_mask.view(-1))
         gt_mask = ~ (~ gt_mask & use_gt_mask.transpose(0, 2))
         mask = gt_mask & zero_mask
         delta = (pred - gt) ** 2
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        return torch.mean(loss)
+    
+    def l1_loss(self, pred, gt, *args, **kwargs):
+        """
+        L1 loss.
+
+        Parameters
+        ----------
+        pred: tensor of shape NHW, the prediction;
+        gt: tensor of shape NHW, the ground-truth.
+        """
+        mask = torch.where(gt < self.epsilon, False, True)
+        delta = torch.abs(pred - gt)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        return torch.mean(loss)
+    
+    def masked_l1_loss(self, pred, gt, gt_mask, *args, **kwargs):
+        """
+        Masked L1 loss.
+        
+        Parameters
+        ----------
+        pred: tensor of shape NHW, the prediction;
+        gt: tensor of shape NHW, the ground-truth;
+        gt_mask: tensor of shape NHW, the ground-truth mask.
+        """
+        zero_mask = torch.where(gt < self.epsilon, False, True)
+        mask = gt_mask & zero_mask
+        delta = torch.abs(pred - gt)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        return torch.mean(loss)
+    
+    def custom_masked_l1_loss(self, pred, gt, gt_mask, use_gt_mask, *args, **kwargs):
+        """
+        Custom masked L1 loss.
+        
+        Parameters
+        ----------
+        pred: tensor of shape NHW, the prediction;
+        gt: tensor of shape NHW, the ground-truth;
+        gt_mask: tensor of shape NHW, the ground-truth mask;
+        use_gt_mask: tensor of shape N, whether to use the ground-truth mask.
+        """
+        zero_mask = torch.where(gt < self.epsilon, False, True)
+        _, use_gt_mask = torch.broadcast_tensors(gt_mask.transpose(0, 2), use_gt_mask.view(-1))
+        gt_mask = ~ (~ gt_mask & use_gt_mask.transpose(0, 2))
+        mask = gt_mask & zero_mask
+        delta = torch.abs(pred - gt)
         loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
         return torch.mean(loss)
 

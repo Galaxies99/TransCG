@@ -218,3 +218,30 @@ class ConfigBuilder(object):
         A boolean value, whether to use the multigpu training/testing (default: False).
         """
         return self.params.get('trainer', {}).get('multigpu', False)
+    
+    def get_loss(self, loss_type = None):
+        if loss_type is None:
+            loss_type = self.params.get('trainer', {}).get('loss_type', 'custom_masked_mse_loss')
+        from utils.criterion import Loss
+        loss = Loss()
+        if loss_type == 'mse_loss':
+            loss.forward = loss.mse_loss
+        elif loss_type == 'masked_mse_loss':
+            loss.forward = loss.masked_mse_loss
+        elif loss_type == 'custom_masked_mse_loss':
+            loss.forward = loss.custom_masked_mse_loss
+        elif loss_type == 'l2_loss':
+            loss.forward = loss.l2_loss
+        elif loss_type == 'masked_l2_loss':
+            loss.forward = loss.masked_l2_loss
+        elif loss_type == 'custom_masked_l2_loss':
+            loss.forward = loss.custom_masked_l2_loss
+        elif loss_type == 'l1_loss':
+            loss.forward = loss.l1_loss
+        elif loss_type == 'masked_l1_loss':
+            loss.forward = loss.masked_l1_loss
+        elif loss_type == 'custom_masked_l1_loss':
+            loss.forward = loss.custom_masked_l1_loss
+        else:
+            raise NotImplementedError('Invalid loss type.')
+        return loss

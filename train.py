@@ -14,7 +14,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
-from utils.criterion import MaskedTransparentLoss, Metrics
+from utils.criterion import Metrics
 from time import perf_counter
 
 
@@ -74,7 +74,7 @@ if os.path.isfile(checkpoint_file):
 if builder.multigpu():
     model = nn.DataParallel(model)
 
-criterion = MaskedTransparentLoss()
+criterion = builder.get_loss()
 metrics = Metrics()
 
 
