@@ -14,8 +14,8 @@
 "lr_scheduler":
   "type": "MultiStepLR"
   "params":
-    "milestones": [20]
-    "gamma": 0.1
+    "milestones": [10, 25]
+    "gamma": 0.2
 
 "dataset":
   "data_dir": "data"

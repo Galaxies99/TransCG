@@ -15,6 +15,7 @@ from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
 from utils.criterion import Metrics
+from utils.constants import LOSS_INF
 from time import perf_counter
 
 
@@ -137,8 +138,12 @@ def test_one_epoch(epoch):
 
 
 def train(start_epoch):
-    min_loss, _ = test_one_epoch(start_epoch - 1)
-    min_loss_epoch = start_epoch
+    if start_epoch != 0:
+        min_loss, _ = test_one_epoch(start_epoch - 1)
+        min_loss_epoch = start_epoch
+    else:
+        min_loss = LOSS_INF
+        min_loss_epoch = None
     for epoch in range(start_epoch, max_epoch):
         logger.info('--> Epoch {}/{}'.format(epoch + 1, max_epoch))
         train_one_epoch(epoch)
