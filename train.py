@@ -7,21 +7,19 @@ import os
 import yaml
 import torch
 import logging
-import warnings
 import argparse
 import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
-from utils.criterion import Metrics
 from utils.constants import LOSS_INF
+from utils.functions import display_results
 from time import perf_counter
 
 
 logging.setLoggerClass(ColoredLogger)
 logger = logging.getLogger(__name__)
-warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -77,19 +75,8 @@ if os.path.isfile(checkpoint_file):
 if builder.multigpu():
     model = nn.DataParallel(model)
 
-criterion = builder.get_loss()
-metrics = Metrics()
-
-
-def display_metrics(metrics_result):
-    logger.info('Metrics: ')
-    logger.info('MSE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[1], metrics_result[0]))
-    logger.info('RMSE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[3], metrics_result[2]))
-    logger.info('REL (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[5], metrics_result[4]))
-    logger.info('MAE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[7], metrics_result[6]))
-    logger.info('Threshold 1.05 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[9], metrics_result[8]))
-    logger.info('Threshold 1.10 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[11], metrics_result[10]))
-    logger.info('Threshold 1.25 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[13], metrics_result[12]))
+criterion = builder.get_criterion()
+metrics = builder.get_metrics()
 
 
 def train_one_epoch(epoch):
@@ -119,6 +106,7 @@ def test_one_epoch(epoch):
     logger.info('Start testing process in epoch {}.'.format(epoch + 1))
     model.eval()
     metrics.clear()
+    running_time = []
     losses = []
     with tqdm(test_dataloader) as pbar:
         for data in pbar:
@@ -133,21 +121,25 @@ def test_one_epoch(epoch):
                 res = model(rgb, depth)
                 time_end = perf_counter()
                 loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
-                metrics.add_record(res, depth_gt, depth_gt_mask, scene_mask)
-            pbar.set_description('Epoch {}, loss: {:.8f}, model time: {:.4f}s'.format(epoch + 1, loss.mean().item(), time_end - time_start))
+                _ = metrics.evaluate_batch(res, depth_gt, depth_gt_mask, scene_mask, record = True)
+            duration = time_end - time_start
+            pbar.set_description('Epoch {}, loss: {:.8f}, model time: {:.4f}s'.format(epoch + 1, loss.mean().item(), duration))
             losses.append(loss.mean().item())
+            running_time.append(duration)
     mean_loss = np.stack(losses).mean()
-    logger.info('Finish testing process in epoch {}, mean testing loss: {:.8f}.'.format(epoch + 1, mean_loss))
-    metrics_result = metrics.final()
-    display_metrics(metrics_result)
-    return mean_loss, list(metrics_result)
+    avg_running_time = np.stack(running_time).mean()
+    logger.info('Finish testing process in epoch {}, mean testing loss: {:.8f}, average running time: {:.4f}s'.format(epoch + 1, mean_loss, avg_running_time))
+    metrics_result = metrics.get_results()
+    metrics.display_results()
+    return mean_loss, metrics_result
 
 
 def train(start_epoch):
     if start_epoch != 0:
         min_loss = checkpoint_loss
         min_loss_epoch = start_epoch
-        display_metrics(checkpoint_metrics)
+        print(checkpoint_metrics)
+        display_results(checkpoint_metrics, logger)
     else:
         min_loss = LOSS_INF
         min_loss_epoch = None
@@ -163,7 +155,7 @@ def train(start_epoch):
             'loss': loss,
             'metrics': metrics_result
         }
-        torch.save(save_dict, os.path.join(stats_dir, 'checkpoint-ep{}.tar'.format(epoch)))
+        torch.save(save_dict, os.path.join(stats_dir, 'checkpoint-epoch{}.tar'.format(epoch)))
         if loss < min_loss:
             min_loss = loss
             min_loss_epoch = epoch + 1

@@ -14,14 +14,17 @@ import numpy as np
 def chromatic_transform(image):
     """
     Add the hue, saturation and luminosity to the image.
+
     This is adapted from implicit-depth repository, ref: https://github.com/NVlabs/implicit_depth/blob/main/src/utils/data_augmentation.py
 
     Parameters
     ----------
+
     image: array, required, the given image.
 
     Returns
     -------
+
     The new image after augmentation in HLS space.
     """
     # Set random hue, luminosity and saturation which ranges from -0.1 to 0.1
@@ -44,15 +47,19 @@ def chromatic_transform(image):
 def add_noise(image, level = 0.1):
     """
     Add noise to the image.
+
     This is adapted from implicit-depth repository, ref: https://github.com/NVlabs/implicit_depth/blob/main/src/utils/data_augmentation.py
 
     Parameters
     ----------
+
     image: array, required, the given image;
+
     level: float, optional, default: 0.1, the maximum noise level.
 
     Returns
     -------
+
     The new image after augmentation of adding noises.
     """
     # random number
@@ -83,26 +90,45 @@ def add_noise(image, level = 0.1):
     return noisy.astype('uint8')
 
 
-def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 1, split = 'train', use_aug = True, rgb_aug_prob = 0.8, **kwargs):
+def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 1, split = 'train', image_size = (720, 1280), use_aug = True, rgb_aug_prob = 0.8, **kwargs):
     """
     Process images and perform data augmentation.
 
     Parameters
     ----------
+
     rgb: array, required, the rgb image;
+    
     depth: array, required, the original depth image;
+
     depth_gt: array, required, the ground-truth depth image;
+    
     depth_gt_mask: array, required, the ground-truth depth image mask;
+    
     scene_type: str in ['cluttered', 'isolated'], optional, default: 'cluttered', the scene type;
+    
     camera_type: int in [1, 2], optional, default: 1, the camera type;
+    
     split: str in ['train', 'test'], optional, default: 'train', the split of the dataset;
+    
+    image_size: (int, int) tuple, optional, default: (720, 1280), the size of the image;
+    
     use_aug: bool, optional, default: True, whether use data augmentation;
+    
     rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True).
 
     Returns
     -------
+    
     rgb, depth, depth_gt, depth_gt_mask, scene_mask tensors for training and testing.
     """
+
+    rgb = cv2.resize(rgb, image_size, interpolation = cv2.INTER_NEAREST)
+    depth = cv2.resize(depth, image_size, interpolation = cv2.INTER_NEAREST)
+    depth_gt = cv2.resize(depth_gt, image_size, interpolation = cv2.INTER_NEAREST)
+    depth_gt_mask = cv2.resize(depth_gt_mask, image_size, interpolation = cv2.INTER_NEAREST)
+    depth_gt_mask = depth_gt_mask.astype(np.bool)
+
     # depth scaling
     depth = depth / (1000 if camera_type == 1 else 4000) # depth sensor scaling
     depth_gt = depth_gt / (1000 if camera_type == 1 else 4000) # depth sensor scaling
@@ -143,4 +169,5 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
 
     # process scene mask
     scene_mask = np.array([1 if scene_type == 'cluttered' else 0], dtype = np.bool)
+
     return torch.FloatTensor(rgb), torch.FloatTensor(depth), torch.FloatTensor(depth_gt), torch.BoolTensor(depth_gt_mask), torch.BoolTensor(scene_mask)

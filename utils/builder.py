@@ -4,6 +4,8 @@ Configuration builder.
 Authors: Hongjie Fang.
 """
 import os
+
+from torch.utils import data
 from dataset.transparent_grasp import TransparentGrasp
 from models.DFNet import DFNet
 
@@ -13,11 +15,21 @@ class ConfigBuilder(object):
     Configuration Builder.
 
     Features includes:
+        
         - build model from configuration;
+        
         - build optimizer from configuration;
+        
         - build learning rate scheduler from configuration;
+        
         - build dataset & dataloader from configuration;
+        
         - build statistics directory from configuration;
+        
+        - build criterion from configuration;
+
+        - build metrics from configuration;
+        
         - fetch training parameters (e.g., max_epoch, multigpu) from configuration.
     """
     def __init__(self, **params):
@@ -26,10 +38,19 @@ class ConfigBuilder(object):
 
         Parameters
         ----------
+        
         params: the configuration parameters.
         """
         super(ConfigBuilder, self).__init__()
         self.params = params
+        self.model_params = params.get('model', {})
+        self.optimizer_params = params.get('optimizer', {})
+        self.lr_scheduler_params = params.get('lr_scheduler', {})
+        self.dataset_params = params.get('dataset', {'data_dir': 'data'})
+        self.dataloader_params = params.get('dataloader', {})
+        self.trainer_params = params.get('trainer', {})
+        self.metrics_params = params.get('metrics', {})
+        self.stats_params = params.get('stats', {})
     
     def get_model(self, model_params = None):
         """
@@ -37,14 +58,16 @@ class ConfigBuilder(object):
 
         Parameters
         ----------
+        
         model_params: dict, optional, default: None. If model_params is provided, then use the parameters specified in the model_params to build the model. Otherwise, the model parameters in the self.params will be used to build the model.
         
         Returns
         -------
+        
         A model, which is usually a torch.nn.Module object.
         """
         if model_params is None:
-            model_params = self.params.get('model', {})
+            model_params = self.model_params
         type = model_params.get('type', 'DFNet')
         params = model_params.get('params', {})
         if type == 'DFNet':
@@ -59,16 +82,19 @@ class ConfigBuilder(object):
         
         Parameters
         ----------
+        
         model: a torch.nn.Module object, the model.
+        
         optimizer_params: dict, optional, default: None. If optimizer_params is provided, then use the parameters specified in the optimizer_params to build the optimizer. Otherwise, the optimizer parameters in the self.params will be used to build the optimizer.
         
         Returns
         -------
+        
         An optimizer for the given model.
         """
         from torch.optim import SGD, ASGD, Adagrad, Adamax, Adadelta, Adam, AdamW, RMSprop
         if optimizer_params is None:
-            optimizer_params = self.params.get('optimizer', {})
+            optimizer_params = self.optimizer_params
         type = optimizer_params.get('type', 'AdamW')
         params = optimizer_params.get('params', {})
         if type == 'SGD':
@@ -97,16 +123,19 @@ class ConfigBuilder(object):
         
         Parameters
         ----------
+        
         optimizer: an optimizer;
+        
         lr_scheduler_params: dict, optional, default: None. If lr_scheduler_params is provided, then use the parameters specified in the lr_scheduler_params to build the learning rate scheduler. Otherwise, the learning rate scheduler parameters in the self.params will be used to build the learning rate scheduler.
         
         Returns
+        
         -------
         A learning rate scheduler for the given optimizer.
         """
         from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR, CyclicLR, CosineAnnealingLR, LambdaLR, StepLR
         if lr_scheduler_params is None:
-            lr_scheduler_params = self.params.get('lr_scheduler', {})
+            lr_scheduler_params = self.lr_scheduler_params
         type = lr_scheduler_params.get('type', '')
         params = lr_scheduler_params.get('params', {})
         if type == 'MultiStepLR':
@@ -133,60 +162,72 @@ class ConfigBuilder(object):
 
         Parameters
         ----------
+        
         dataset_params: dict, optional, default: None. If dataset_params is provided, then use the parameters specified in the dataset_params to build the dataset. Otherwise, the dataset parameters in the self.params will be used to build the dataset;
+        
         split: str in ['train', 'test'], optional, default: 'train', the splitted dataset.
 
         Returns
         -------
+        
         A torch.utils.data.Dataset item.
         """
         if dataset_params is None:
-            dataset_params = self.params.get('dataset', {"data_dir": "data"})
+            dataset_params = self.dataset_params
         return TransparentGrasp(split = split, **dataset_params)
     
-    def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, num_workers = None, shuffle = None):
+    def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, dataloader_params = None):
         """
         Get the dataloader from configuration.
 
         Parameters
         ----------
+        
         dataset_params: dict, optional, default: None. If dataset_params is provided, then use the parameters specified in the dataset_params to build the dataset. Otherwise, the dataset parameters in the self.params will be used to build the dataset;
+        
         split: str in ['train', 'test'], optional, default: 'train', the splitted dataset;
+        
         batch_size: int, optional, default: None. If batch_size is None, then the batch size parameter in the self.params will be used to represent the batch size (If still not specified, default: 4);
-        num_workers: int, optional, default: None. If num_workers is None, then the worker number parameter in the self.params will be used to represent the worker number (If still not specified, default: 16).
-        shuffle: bool, optional, default: None. If shuffle is None, then the shuffle parameter in the self.params will be used to represent the shuffle option (If still not specified, default: True).
+        
+        dataloader_params: dict, optional, default: None. If dataloader_params is provided, then use the parameters specified in the dataloader_params to get the dataloader. Otherwise, the dataloader parameters in the self.params will be used to get the dataloader.
 
         Returns
         -------
+        
         A torch.utils.data.DataLoader item.
         """
         from torch.utils.data import DataLoader
         if batch_size is None:
             if split == 'train':
-                batch_size = self.params.get('trainer', {}).get('batch_size', 4)
+                batch_size = self.trainer_params.get('batch_size', 4)
             else:
-                batch_size = self.params.get('trainer', {}).get('test_batch_size', 1)
-        if num_workers is None:
-            num_workers = self.params.get('trainer', {}).get('num_workers', 16)
-        if shuffle is None:
-            shuffle = self.params.get('trainer', {}).get('shuffle', True)
+                batch_size = self.trainer_params.get('test_batch_size', 1)
+        if dataloader_params is None:
+            dataloader_params = self.dataloader_params
         dataset = self.get_dataset(dataset_params, split)
         return DataLoader(
             dataset,
             batch_size = batch_size,
-            shuffle = shuffle,
-            num_workers = num_workers
+            **dataloader_params
         )
 
-    def get_max_epoch(self):
+    def get_max_epoch(self, trainer_params = None):
         """
         Get the max epoch from configuration.
 
+        Parameters
+        ----------
+        
+        trainer_params: dict, optional, default: None. If trainer_params is provided, then use the parameters specified in the trainer_params to get the maximum epoch. Otherwise, the trainer parameters in the self.params will be used to get the maximum epoch.
+
         Returns
         -------
+        
         An integer, which is the max epoch (default: 50).
         """
-        return self.params.get('trainer', {}).get('max_epoch', 50)
+        if trainer_params is None:
+            trainer_params = self.trainer_params
+        return trainer_params.get('max_epoch', 50)
     
     def get_stats_dir(self, stats_params = None):
         """
@@ -194,14 +235,16 @@ class ConfigBuilder(object):
 
         Parameters
         ----------
+        
         stats_params: dict, optional, default: None. If stats_params is provided, then use the parameters specified in the stats_params to get the statistics directory. Otherwise, the statistics parameters in the self.params will be used to get the statistics directory.
 
         Returns
         -------
+        
         A string, the statistics directory.
         """
         if stats_params is None:
-            stats_params = self.params.get('stats', {})
+            stats_params = self.stats_params
         stats_dir = stats_params.get('stats_dir', 'stats')
         stats_exper = stats_params.get('stats_exper', 'default')
         stats_res_dir = os.path.join(stats_dir, stats_exper)
@@ -209,39 +252,64 @@ class ConfigBuilder(object):
             os.makedirs(stats_res_dir)
         return stats_res_dir
     
-    def multigpu(self):
+    def multigpu(self, trainer_params = None):
         """
         Get the multigpu settings from configuration.
 
+        Parameters
+        ----------
+
+        trainer_params: dict, optional, default: None. If trainer_params is provided, then use the parameters specified in the trainer_params to get the multigpu flag. Otherwise, the trainer parameters in the self.params will be used to get the multigpu flag.
+
         Returns
         -------
+
         A boolean value, whether to use the multigpu training/testing (default: False).
         """
-        return self.params.get('trainer', {}).get('multigpu', False)
+        if trainer_params is None:
+            trainer_params = self.trainer_params
+        return trainer_params.get('multigpu', False)
     
-    def get_loss(self, loss_type = None):
-        if loss_type is None:
-            loss_type = self.params.get('trainer', {}).get('loss_type', 'custom_masked_mse_loss')
-        from utils.criterion import Loss
-        loss = Loss()
-        if loss_type == 'mse_loss':
-            loss.forward = loss.mse_loss
-        elif loss_type == 'masked_mse_loss':
-            loss.forward = loss.masked_mse_loss
-        elif loss_type == 'custom_masked_mse_loss':
-            loss.forward = loss.custom_masked_mse_loss
-        elif loss_type == 'l2_loss':
-            loss.forward = loss.l2_loss
-        elif loss_type == 'masked_l2_loss':
-            loss.forward = loss.masked_l2_loss
-        elif loss_type == 'custom_masked_l2_loss':
-            loss.forward = loss.custom_masked_l2_loss
-        elif loss_type == 'l1_loss':
-            loss.forward = loss.l1_loss
-        elif loss_type == 'masked_l1_loss':
-            loss.forward = loss.masked_l1_loss
-        elif loss_type == 'custom_masked_l1_loss':
-            loss.forward = loss.custom_masked_l1_loss
-        else:
-            raise NotImplementedError('Invalid loss type.')
-        return loss
+    def get_criterion(self, criterion_params = None):
+        """
+        Get the criterion settings from configuration.
+
+        Parameters
+        ----------
+
+        criterion_params: dict, optional, default: None. If criterion_params is provided, then use the parameters specified in the criterion_params to get the criterion. Otherwise, the criterion parameters in the self.params will be used to get the criterion.
+
+        Returns
+        -------
+
+        A torch.nn.Module object, the criterion.
+        """
+        if criterion_params is None:
+            criterion_params = self.trainer_params.get('criterion', {})
+        loss_type = criterion_params.get('type', 'custom_masked_mse_loss')
+        loss_epsilon = criterion_params.get('epsilon', 1e-8)
+        from utils.criterion import Criterion
+        criterion = Criterion(loss_type = loss_type, epsilon = loss_epsilon)
+        return criterion
+    
+    def get_metrics(self, metrics_params = None):
+        """
+        Get the metrics settings from configuration.
+
+        Parameters
+        ----------
+
+        metrics_params: dict, optional, default: None. If metrics_params is provided, then use the parameters specified in the metrics_params to get the metrics. Otherwise, the metrics parameters in the self.params will be used to get the metrics
+        
+        Returns
+        -------
+
+        A MetricsRecorder object.
+        """
+        if metrics_params is None:
+            metrics_params = self.metrics_params
+        metrics_list = metrics_params.get('types', ['MSE', 'MaskedMSE', 'RMSE', 'MaskedRMSE', 'REL', 'MaskedREL', 'MAE', 'MaskedMAE', 'Threshold@1.05', 'MaskedThreshold@1.05', 'Threshold@1.10', 'MaskedThreshold@1.10', 'Threshold@1.25', 'MaskedThreshold@1.25'])
+        metrics_epsilon = metrics_params.get('epsilon', 1e-8)
+        from utils.metrics import MetricsRecorder
+        metrics = MetricsRecorder(metrics_list = metrics_list, epsilon = metrics_epsilon)
+        return metrics
