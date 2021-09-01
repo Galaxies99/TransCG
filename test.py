@@ -14,7 +14,6 @@ import torch.nn as nn
 from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
-from utils.criterion import Metrics
 from time import perf_counter
 
 
@@ -58,14 +57,15 @@ if os.path.isfile(checkpoint_file):
 else:
     raise FileNotFoundError('No checkpoint.')
 
-criterion = builder.get_loss()
-metrics = Metrics()
+criterion = builder.get_criterion()
+metrics = builder.get_metrics()
 
 
 def test():
     logger.info('Start testing process.')
     model.eval()
     metrics.clear()
+    running_time = []
     losses = []
     with tqdm(test_dataloader) as pbar:
         for data in pbar:
@@ -80,21 +80,17 @@ def test():
                 res = model(rgb, depth)
                 time_end = perf_counter()
                 loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
-                metrics.add_record(res, depth_gt, depth_gt_mask, scene_mask)
-            pbar.set_description('Test loss: {:.8f}, model time: {:.4f}s'.format(loss.mean().item(), time_end - time_start))
+                _ = metrics.evaluate_batch(res, depth_gt, depth_gt_mask, scene_mask, record = True)
+            duration = time_end - time_start
+            pbar.set_description('Loss: {:.8f}, model time: {:.4f}s'.format(loss.mean().item(), duration))
             losses.append(loss.mean().item())
+            running_time.append(duration)
     mean_loss = np.stack(losses).mean()
-    logger.info('Finish testing process, mean testing loss: {:.8f}.'.format(mean_loss))
-    metrics_result = metrics.final()
-    logger.info('Metrics: ')
-    logger.info('MSE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[1], metrics_result[0]))
-    logger.info('RMSE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[3], metrics_result[2]))
-    logger.info('REL (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[5], metrics_result[4]))
-    logger.info('MAE (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[7], metrics_result[6]))
-    logger.info('Threshold 1.05 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[9], metrics_result[8]))
-    logger.info('Threshold 1.10 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[11], metrics_result[10]))
-    logger.info('Threshold 1.25 (w/o mask): {:.6f},    {:.6f}'.format(metrics_result[13], metrics_result[12]))
-    return mean_loss, list(metrics_result)
+    avg_running_time = np.stack(running_time).mean()
+    logger.info('Finish testing process, mean testing loss: {:.8f}, average running time: {:.4f}s'.format(mean_loss, avg_running_time))
+    metrics_result = metrics.get_results()
+    metrics.display_results()
+    return mean_loss, metrics_result
 
 
 if __name__ == '__main__':

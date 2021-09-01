@@ -239,7 +239,7 @@ class Metrics(object):
         """
         delta = kwargs.get('delta', 1.25)
         thres = torch.maximum(pred / (gt + self.epsilon), gt / pred)
-        res = ((thres < delta) & zero_mask).float().sum(dim = [1, 2]) / torch.sum(zero_mask.float(), dim = [1, 2]) * 100
+        res = ((thres < delta) & zero_mask).float().sum(dim = [1, 2]) / torch.sum(zero_mask.float(), dim = [1, 2])
         return torch.mean(res).item() * 100
     
     def MaskedThreshold(self, pred, gt, zero_mask, gt_mask, *args, **kwargs):
@@ -267,7 +267,7 @@ class Metrics(object):
         delta = kwargs.get('delta', 1.25)
         mask = gt_mask & zero_mask
         thres = torch.maximum(pred / (gt + self.epsilon), gt / pred)
-        res = ((thres < delta) & mask).float().sum(dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2]) * 100
+        res = ((thres < delta) & mask).float().sum(dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
         return torch.mean(res).item() * 100
 
 
@@ -366,7 +366,7 @@ class MetricsRecorder(object):
         """
         Get the final results of metrics dict.
         """
-        final_metrics_dict = self.metrics_recorder_dict
+        final_metrics_dict = self.metrics_recorder_dict.copy()
         for metric_line in self.metrics_list:
             metric_name, _, _ = metric_line
             final_metrics_dict[metric_name] /= final_metrics_dict['samples']
