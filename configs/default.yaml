@@ -19,7 +19,8 @@
 
 "dataset":
   "data_dir": "data"
-  "image_size": !!python/tuple [1280, 720]
+  "train_image_size": !!python/tuple [1280, 720]
+  "test_image_size": !!python/tuple [1280, 720]
   "use_augmentation": True
   "rgb_augmentation_probability": 0.8
 
