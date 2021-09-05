@@ -138,7 +138,6 @@ def train(start_epoch):
     if start_epoch != 0:
         min_loss = checkpoint_loss
         min_loss_epoch = start_epoch
-        print(checkpoint_metrics)
         display_results(checkpoint_metrics, logger)
     else:
         min_loss = LOSS_INF

@@ -63,7 +63,7 @@ class TransparentGrasp(Dataset):
         assert len(self.sample_info) == self.total_samples, "Error in total samples, expect {} samples, found {} samples.".format(self.total_samples, len(self.sample_info))
         self.use_aug = kwargs.get('use_augmentation', True)
         self.rgb_aug_prob = kwargs.get('rgb_augmentation_probability', 0.8)
-        self.image_size = kwargs.get('{}_image_size'.format(split), (1280, 720))
+        self.image_size = kwargs.get('image_size', (1280, 720))
 
     def __getitem__(self, id):
         img_path, camera_type, scene_type = self.sample_info[id]

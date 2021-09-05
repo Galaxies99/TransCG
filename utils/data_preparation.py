@@ -7,7 +7,9 @@ Ref:
 """
 import cv2
 import torch
+import Imath
 import random
+import OpenEXR
 import numpy as np
 
 
@@ -90,7 +92,55 @@ def add_noise(image, level = 0.1):
     return noisy.astype('uint8')
 
 
-def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 1, split = 'train', image_size = (720, 1280), use_aug = True, rgb_aug_prob = 0.8, **kwargs):
+def exr_loader(exr_path, ndim=3):
+    """
+    Loads a .exr file as a numpy array.
+
+    This is adapted from implicit-depth repository, ref: https://github.com/NVlabs/implicit_depth/blob/main/src/utils/data_augmentation.py.
+
+    Parameters
+    ----------
+    exr_path: path to the exr file
+    
+    ndim: number of channels that should be in returned array. Valid values are 1 and 3.
+        - if ndim=1, only the 'R' channel is taken from exr file;
+        - if ndim=3, the 'R', 'G' and 'B' channels are taken from exr file. The exr file must have 3 channels in this case.
+    
+    Returns
+    -------
+    numpy.ndarray (dtype=np.float32).
+        - If ndim=1, shape is (height x width);
+        - If ndim=3, shape is (3 x height x width)
+    """
+
+    exr_file = OpenEXR.InputFile(exr_path)
+    cm_dw = exr_file.header()['dataWindow']
+    size = (cm_dw.max.x - cm_dw.min.x + 1, cm_dw.max.y - cm_dw.min.y + 1)
+
+    pt = Imath.PixelType(Imath.PixelType.FLOAT)
+
+    if ndim == 3:
+        # read channels indivudally
+        allchannels = []
+        for c in ['R', 'G', 'B']:
+            # transform data to numpy
+            channel = np.frombuffer(exr_file.channel(c, pt), dtype=np.float32)
+            channel.shape = (size[1], size[0])
+            allchannels.append(channel)
+
+        # create array and transpose dimensions to match tensor style
+        exr_arr = np.array(allchannels).transpose((0, 1, 2))
+        return exr_arr
+
+    if ndim == 1:
+        # transform data to numpy
+        channel = np.frombuffer(exr_file.channel('R', pt), dtype=np.float32)
+        channel.shape = (size[1], size[0])  # Numpy arrays are (row, col)
+        exr_arr = np.array(channel)
+        return exr_arr
+
+
+def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = 'train', image_size = (720, 1280), use_aug = True, rgb_aug_prob = 0.8, **kwargs):
     """
     Process images and perform data augmentation.
 
@@ -107,7 +157,10 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     
     scene_type: str in ['cluttered', 'isolated'], optional, default: 'cluttered', the scene type;
     
-    camera_type: int in [1, 2], optional, default: 1, the camera type;
+    camera_type: int in [0, 1, 2], optional, default: 0, the camera type;
+        - 0: no scale is applied;
+        - 1: scale 1000 (RealSense D415, RealSense D435, etc.);
+        - 2: scale 4000 (RealSense L515).
     
     split: str in ['train', 'test'], optional, default: 'train', the split of the dataset;
     
@@ -130,13 +183,22 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     depth_gt_mask = depth_gt_mask.astype(np.bool)
 
     # depth scaling
-    depth = depth / (1000 if camera_type == 1 else 4000) # depth sensor scaling
-    depth_gt = depth_gt / (1000 if camera_type == 1 else 4000) # depth sensor scaling
+    scale_coeff = 1
+    if camera_type == 1:
+        scale_coeff = 1000
+    if camera_type == 2:
+        scale_coeff = 4000
+    depth = depth / scale_coeff
+    depth_gt = depth_gt / scale_coeff
 
     # Depth Normalization
     depth = np.where(depth > 10, 1, depth / 10)
     depth_gt = np.where(depth_gt > 10, 1, depth_gt / 10)
 
+    # Clear NaN Value
+    depth[np.isnan(depth)] = 0.0
+    depth_gt[np.isnan(depth_gt)] = 0.0
+    
     # RGB augmentation.
     if split == 'train' and use_aug and np.random.rand(1) > 1 - rgb_aug_prob:
         rgb = chromatic_transform(rgb)

@@ -18,18 +18,24 @@
     "gamma": 0.2
 
 "dataset":
-  "data_dir": "data"
-  "train_image_size": !!python/tuple [1280, 720]
-  "test_image_size": !!python/tuple [1280, 720]
-  "use_augmentation": True
-  "rgb_augmentation_probability": 0.8
+  "train":
+    "type": "transparent-grasp"
+    "data_dir": "data"
+    "image_size": !!python/tuple [1280, 720]
+    "use_augmentation": True
+    "rgb_augmentation_probability": 0.8
+  "test":
+    "type": "transparent-grasp"
+    "data_dir": "data"
+    "image_size": !!python/tuple [1280, 720]
+    "use_augmentation": False
 
 "dataloader":
   "num_workers": 16
   "shuffle": True
 
 "trainer":
-  "batch_size": 4
+  "batch_size": 8
   "test_batch_size": 1
   "multigpu": True
   "max_epoch": 40

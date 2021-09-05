@@ -5,10 +5,6 @@ Authors: Hongjie Fang.
 """
 import os
 
-from torch.utils import data
-from dataset.transparent_grasp import TransparentGrasp
-from models.DFNet import DFNet
-
 
 class ConfigBuilder(object):
     """
@@ -66,6 +62,7 @@ class ConfigBuilder(object):
         
         A model, which is usually a torch.nn.Module object.
         """
+        from models.DFNet import DFNet
         if model_params is None:
             model_params = self.model_params
         type = model_params.get('type', 'DFNet')
@@ -172,9 +169,19 @@ class ConfigBuilder(object):
         
         A torch.utils.data.Dataset item.
         """
+        from dataset.transparent_grasp import TransparentGrasp
+        from dataset.cleargrasp import ClearGraspRealWorld
         if dataset_params is None:
             dataset_params = self.dataset_params
-        return TransparentGrasp(split = split, **dataset_params)
+        dataset_params = dataset_params.get(split, {})
+        type = dataset_params.get('type', 'transparent-grasp')
+        if type == 'transparent-grasp':
+            dataset = TransparentGrasp(split = split, **dataset_params)
+        elif type == 'cleargrasp':
+            dataset = ClearGraspRealWorld(split = split, **dataset_params)
+        else:
+            raise NotImplementedError('Invalid dataset type.')
+        return dataset
     
     def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, dataloader_params = None):
         """
