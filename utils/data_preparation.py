@@ -92,7 +92,7 @@ def add_noise(image, level = 0.1):
     return noisy.astype('uint8')
 
 
-def exr_loader(exr_path, ndim=3):
+def exr_loader(exr_path, ndim=3, ndim_representation = ['R', 'G', 'B']):
     """
     Loads a .exr file as a numpy array.
 
@@ -106,6 +106,8 @@ def exr_loader(exr_path, ndim=3):
         - if ndim=1, only the 'R' channel is taken from exr file;
         - if ndim=3, the 'R', 'G' and 'B' channels are taken from exr file. The exr file must have 3 channels in this case.
     
+    depth_representation: list of str, the representation of channels, default = ['R', 'G', 'B'].
+    
     Returns
     -------
     numpy.ndarray (dtype=np.float32).
@@ -118,11 +120,12 @@ def exr_loader(exr_path, ndim=3):
     size = (cm_dw.max.x - cm_dw.min.x + 1, cm_dw.max.y - cm_dw.min.y + 1)
 
     pt = Imath.PixelType(Imath.PixelType.FLOAT)
+    assert ndim == len(ndim_representation), "ndim should match ndim_representation."
 
     if ndim == 3:
         # read channels indivudally
         allchannels = []
-        for c in ['R', 'G', 'B']:
+        for c in ndim_representation:
             # transform data to numpy
             channel = np.frombuffer(exr_file.channel(c, pt), dtype=np.float32)
             channel.shape = (size[1], size[0])
@@ -134,7 +137,7 @@ def exr_loader(exr_path, ndim=3):
 
     if ndim == 1:
         # transform data to numpy
-        channel = np.frombuffer(exr_file.channel('R', pt), dtype=np.float32)
+        channel = np.frombuffer(exr_file.channel(ndim_representation[0], pt), dtype=np.float32)
         channel.shape = (size[1], size[0])  # Numpy arrays are (row, col)
         exr_arr = np.array(channel)
         return exr_arr
@@ -198,7 +201,7 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     # Clear NaN Value
     depth[np.isnan(depth)] = 0.0
     depth_gt[np.isnan(depth_gt)] = 0.0
-    
+
     # RGB augmentation.
     if split == 'train' and use_aug and np.random.rand(1) > 1 - rgb_aug_prob:
         rgb = chromatic_transform(rgb)

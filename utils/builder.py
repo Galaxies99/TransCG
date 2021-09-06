@@ -169,16 +169,24 @@ class ConfigBuilder(object):
         
         A torch.utils.data.Dataset item.
         """
-        from dataset.transparent_grasp import TransparentGrasp
-        from dataset.cleargrasp import ClearGraspRealWorld
+        from datasets.transparent_grasp import TransparentGrasp
+        from datasets.cleargrasp import ClearGraspRealWorld, ClearGraspSynthetic
+        from datasets.omniverse_object import OmniverseObject
+        from datasets.transparent_object import TransparentObject
         if dataset_params is None:
             dataset_params = self.dataset_params
         dataset_params = dataset_params.get(split, {})
         type = dataset_params.get('type', 'transparent-grasp')
         if type == 'transparent-grasp':
             dataset = TransparentGrasp(split = split, **dataset_params)
-        elif type == 'cleargrasp':
+        elif type == 'cleargrasp-real':
             dataset = ClearGraspRealWorld(split = split, **dataset_params)
+        elif type == 'cleargrasp-syn':
+            dataset = ClearGraspSynthetic(split = split, **dataset_params)
+        elif type == 'omniverse':
+            dataset = OmniverseObject(split = split, **dataset_params)
+        elif type == 'transparent-object':
+            dataset = TransparentObject(split = split, **dataset_params)
         else:
             raise NotImplementedError('Invalid dataset type.')
         return dataset
