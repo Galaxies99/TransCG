@@ -4,6 +4,7 @@ Configuration builder.
 Authors: Hongjie Fang.
 """
 import os
+from torch.utils.data import ConcatDataset
 
 
 class ConfigBuilder(object):
@@ -175,20 +176,46 @@ class ConfigBuilder(object):
         from datasets.transparent_object import TransparentObject
         if dataset_params is None:
             dataset_params = self.dataset_params
-        dataset_params = dataset_params.get(split, {})
-        type = dataset_params.get('type', 'transparent-grasp')
-        if type == 'transparent-grasp':
-            dataset = TransparentGrasp(split = split, **dataset_params)
-        elif type == 'cleargrasp-real':
-            dataset = ClearGraspRealWorld(split = split, **dataset_params)
-        elif type == 'cleargrasp-syn':
-            dataset = ClearGraspSynthetic(split = split, **dataset_params)
-        elif type == 'omniverse':
-            dataset = OmniverseObject(split = split, **dataset_params)
-        elif type == 'transparent-object':
-            dataset = TransparentObject(split = split, **dataset_params)
+        dataset_params = dataset_params.get(split, {'type': 'transparent-grasp'})
+        if type(dataset_params) == dict:
+            dataset_type = dataset_params.get('type', 'transparent-grasp')
+            if dataset_type == 'transparent-grasp':
+                dataset = TransparentGrasp(split = split, **dataset_params)
+            elif dataset_type == 'cleargrasp-real':
+                dataset = ClearGraspRealWorld(split = split, **dataset_params)
+            elif dataset_type == 'cleargrasp-syn':
+                dataset = ClearGraspSynthetic(split = split, **dataset_params)
+            elif dataset_type == 'omniverse':
+                dataset = OmniverseObject(split = split, **dataset_params)
+            elif dataset_type == 'transparent-object':
+                dataset = TransparentObject(split = split, **dataset_params)
+            else:
+                raise NotImplementedError('Invalid dataset type.')
+        elif type(dataset_params) == list:
+            dataset_types = []
+            dataset_list = []
+            for single_dataset_params in dataset_params:
+                dataset_type = single_dataset_params.get('type', 'transparent-grasp')
+                if dataset_type in dataset_types:
+                    raise AttributeError('Duplicate dataset found.')
+                else:
+                    dataset_types.append(dataset_type)
+                if dataset_type == 'transparent-grasp':
+                    dataset = TransparentGrasp(split = split, **single_dataset_params)
+                elif dataset_type == 'cleargrasp-real':
+                    dataset = ClearGraspRealWorld(split = split, **single_dataset_params)
+                elif dataset_type == 'cleargrasp-syn':
+                    dataset = ClearGraspSynthetic(split = split, **single_dataset_params)
+                elif dataset_type == 'omniverse':
+                    dataset = OmniverseObject(split = split, **single_dataset_params)
+                elif dataset_type == 'transparent-object':
+                    dataset = TransparentObject(split = split, **single_dataset_params)
+                else:
+                    raise NotImplementedError('Invalid dataset type.')
+                dataset_list.appen(dataset)
+            dataset = ConcatDataset(dataset_list)
         else:
-            raise NotImplementedError('Invalid dataset type.')
+            raise AttributeError('Invalid dataset format.')
         return dataset
     
     def get_dataloader(self, dataset_params = None, split = 'train', batch_size = None, dataloader_params = None):
