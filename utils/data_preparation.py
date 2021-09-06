@@ -100,6 +100,7 @@ def exr_loader(exr_path, ndim=3, ndim_representation = ['R', 'G', 'B']):
 
     Parameters
     ----------
+
     exr_path: path to the exr file
     
     ndim: number of channels that should be in returned array. Valid values are 1 and 3.
@@ -110,6 +111,7 @@ def exr_loader(exr_path, ndim=3, ndim_representation = ['R', 'G', 'B']):
     
     Returns
     -------
+
     numpy.ndarray (dtype=np.float32).
         - If ndim=1, shape is (height x width);
         - If ndim=3, shape is (3 x height x width)
