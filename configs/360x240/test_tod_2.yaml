@@ -46,4 +46,4 @@
 
 "stats":
   "stats_dir": "stats"
-  "stats_exper": "train-tg-val-cgsyn-cgreal"
+  "stats_exper": "train-cgsyn-ood-val-cgsyn-cgreal"
