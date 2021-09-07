@@ -14,29 +14,29 @@
 "lr_scheduler":
   "type": "MultiStepLR"
   "params":
-    "milestones": [10, 25]
+    "milestones": [5, 15, 25, 35]
     "gamma": 0.2
 
 "dataset":
   "train":
-    "type": "transparent-grasp"
-    "data_dir": "data"
+    "type": "cleargrasp-syn"
+    "data_dir": "data-cleargrasp"
     "image_size": !!python/tuple [320, 240]
     "use_augmentation": True
     "rgb_augmentation_probability": 0.8
   "test":
-    "type": "transparent-grasp"
-    "data_dir": "data"
+    "type": "transparent-object"
+    "data_dir": "data-keypose"
     "image_size": !!python/tuple [320, 240]
     "use_augmentation": False
 
 "dataloader":
-  "num_workers": 48
+  "num_workers": 72
   "shuffle": True
   "drop_last": True
 
 "trainer":
-  "batch_size": 32
+  "batch_size": 64
   "test_batch_size": 1
   "multigpu": True
   "max_epoch": 40  
@@ -50,4 +50,4 @@
 
 "stats":
   "stats_dir": "stats"
-  "stats_exper": "small"
+  "stats_exper": "small-cg"

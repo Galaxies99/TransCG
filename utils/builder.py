@@ -80,7 +80,7 @@ class ConfigBuilder(object):
             raise NotImplementedError('Invalid model type.')
         return model
     
-    def get_optimizer(self, model, optimizer_params = None):
+    def get_optimizer(self, model, optimizer_params = None, resume = False):
         """
         Get the optimizer from configuration.
         
@@ -89,7 +89,9 @@ class ConfigBuilder(object):
         
         model: a torch.nn.Module object, the model.
         
-        optimizer_params: dict, optional, default: None. If optimizer_params is provided, then use the parameters specified in the optimizer_params to build the optimizer. Otherwise, the optimizer parameters in the self.params will be used to build the optimizer.
+        optimizer_params: dict, optional, default: None. If optimizer_params is provided, then use the parameters specified in the optimizer_params to build the optimizer. Otherwise, the optimizer parameters in the self.params will be used to build the optimizer;
+        
+        resume: bool, optional, default: False, whether to resume training from an existing checkpoint.
         
         Returns
         -------
@@ -101,27 +103,31 @@ class ConfigBuilder(object):
             optimizer_params = self.optimizer_params
         type = optimizer_params.get('type', 'AdamW')
         params = optimizer_params.get('params', {})
+        if resume:
+            network_params = [{'params': model.parameters(), 'initial_lr': params.get('lr', 0.001)}]
+        else:
+            network_params = model.parameters()
         if type == 'SGD':
-            optimizer = SGD(model.parameters(), **params)
+            optimizer = SGD(network_params, **params)
         elif type == 'ASGD':
-            optimizer = ASGD(model.parameters(), **params)
+            optimizer = ASGD(network_params, **params)
         elif type == 'Adagrad':
-            optimizer = Adagrad(model.parameters(), **params)
+            optimizer = Adagrad(network_params, **params)
         elif type == 'Adamax':
-            optimizer = Adamax(model.parameters(), **params)
+            optimizer = Adamax(network_params, **params)
         elif type == 'Adadelta':
-            optimizer = Adadelta(model.parameters(), **params)
+            optimizer = Adadelta(network_params, **params)
         elif type == 'Adam':
-            optimizer = Adam(model.parameters(), **params)
+            optimizer = Adam(network_params, **params)
         elif type == 'AdamW':
-            optimizer = AdamW(model.parameters(), **params)
+            optimizer = AdamW(network_params, **params)
         elif type == 'RMSprop':
-            optimizer = RMSprop(model.parameters(), **params)
+            optimizer = RMSprop(network_params, **params)
         else:
             raise NotImplementedError('Invalid optimizer type.')
         return optimizer
     
-    def get_lr_scheduler(self, optimizer, lr_scheduler_params = None):
+    def get_lr_scheduler(self, optimizer, lr_scheduler_params = None, resume = False, resume_epoch = None):
         """
         Get the learning rate scheduler from configuration.
         
@@ -130,11 +136,15 @@ class ConfigBuilder(object):
         
         optimizer: an optimizer;
         
-        lr_scheduler_params: dict, optional, default: None. If lr_scheduler_params is provided, then use the parameters specified in the lr_scheduler_params to build the learning rate scheduler. Otherwise, the learning rate scheduler parameters in the self.params will be used to build the learning rate scheduler.
+        lr_scheduler_params: dict, optional, default: None. If lr_scheduler_params is provided, then use the parameters specified in the lr_scheduler_params to build the learning rate scheduler. Otherwise, the learning rate scheduler parameters in the self.params will be used to build the learning rate scheduler;
+
+        resume: bool, optional, default: False, whether to resume training from an existing checkpoint;
+
+        resume_epoch: int, optional, default: None, the epoch of the checkpoint.
         
         Returns
-        
         -------
+
         A learning rate scheduler for the given optimizer.
         """
         from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR, CyclicLR, CosineAnnealingLR, LambdaLR, StepLR
@@ -142,6 +152,8 @@ class ConfigBuilder(object):
             lr_scheduler_params = self.lr_scheduler_params
         type = lr_scheduler_params.get('type', '')
         params = lr_scheduler_params.get('params', {})
+        if resume:
+            params.update(last_epoch = resume_epoch)
         if type == 'MultiStepLR':
             scheduler = MultiStepLR(optimizer, **params)
         elif type == 'ExponentialLR':

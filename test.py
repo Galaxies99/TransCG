@@ -19,7 +19,7 @@ from time import perf_counter
 
 logging.setLoggerClass(ColoredLogger)
 logger = logging.getLogger(__name__)
-warnings.filterwarnings("ignore")
+warnings.simplefilter("ignore", UserWarning)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

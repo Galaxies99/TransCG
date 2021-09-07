@@ -8,6 +8,7 @@ import yaml
 import torch
 import logging
 import argparse
+import warnings
 import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
@@ -20,6 +21,7 @@ from time import perf_counter
 
 logging.setLoggerClass(ColoredLogger)
 logger = logging.getLogger(__name__)
+warnings.simplefilter("ignore", UserWarning)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -53,10 +55,6 @@ logger.info('Building dataloaders ...')
 train_dataloader = builder.get_dataloader(split = 'train')
 test_dataloader = builder.get_dataloader(split = 'test')
 
-logger.info('Building optimizer and learning rate schedulers ...')
-optimizer = builder.get_optimizer(model)
-lr_scheduler = builder.get_lr_scheduler(optimizer)
-
 logger.info('Checking checkpoints ...')
 start_epoch = 0
 max_epoch = builder.get_max_epoch()
@@ -68,9 +66,12 @@ if os.path.isfile(checkpoint_file):
     start_epoch = checkpoint['epoch']
     checkpoint_metrics = checkpoint['metrics']
     checkpoint_loss = checkpoint['loss']
-    if lr_scheduler is not None:
-        lr_scheduler.last_epoch = start_epoch - 1
     logger.info("Checkpoint {} (epoch {}) loaded.".format(checkpoint_file, start_epoch))
+
+logger.info('Building optimizer and learning rate schedulers ...')
+resume = (start_epoch > 0)
+optimizer = builder.get_optimizer(model, resume = resume)
+lr_scheduler = builder.get_lr_scheduler(optimizer, resume = resume, resume_epoch = (start_epoch - 1 if resume else None))
 
 if builder.multigpu():
     model = nn.DataParallel(model)
@@ -81,6 +82,8 @@ metrics = builder.get_metrics()
 
 def train_one_epoch(epoch):
     logger.info('Start training process in epoch {}.'.format(epoch + 1))
+    if lr_scheduler is not None:
+        logger.info('Learning rate: {}.'.format(lr_scheduler.get_lr()))
     model.train()
     losses = []
     with tqdm(train_dataloader) as pbar:

@@ -14,31 +14,32 @@
 "lr_scheduler":
   "type": "MultiStepLR"
   "params":
-    "milestones": [10, 25]
+    "milestones": [5, 15, 35]
     "gamma": 0.2
 
 "dataset":
   "train":
     "type": "transparent-grasp"
     "data_dir": "data"
-    "image_size": !!python/tuple [1280, 720]
+    "image_size": !!python/tuple [320, 240]
     "use_augmentation": True
     "rgb_augmentation_probability": 0.8
   "test":
     "type": "transparent-grasp"
     "data_dir": "data"
-    "image_size": !!python/tuple [1280, 720]
+    "image_size": !!python/tuple [320, 240]
     "use_augmentation": False
 
 "dataloader":
-  "num_workers": 16
+  "num_workers": 48
   "shuffle": True
+  "drop_last": True
 
 "trainer":
-  "batch_size": 8
+  "batch_size": 32
   "test_batch_size": 1
   "multigpu": True
-  "max_epoch": 40
+  "max_epoch": 40  
   "criterion":
     "type": "custom_masked_mse_loss"
     "epsilon": 0.00000001
@@ -49,4 +50,4 @@
 
 "stats":
   "stats_dir": "stats"
-  "stats_exper": "default"
+  "stats_exper": "small"
