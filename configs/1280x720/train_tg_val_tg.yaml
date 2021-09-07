@@ -1,3 +1,4 @@
+# Script 1
 "model":
   "type": "DFNet"
   "params":
@@ -14,32 +15,31 @@
 "lr_scheduler":
   "type": "MultiStepLR"
   "params":
-    "milestones": [5, 15, 35]
+    "milestones": [5, 15, 25, 35]
     "gamma": 0.2
 
 "dataset":
   "train":
     "type": "transparent-grasp"
     "data_dir": "data"
-    "image_size": !!python/tuple [320, 240]
+    "image_size": !!python/tuple [1280, 720]
     "use_augmentation": True
     "rgb_augmentation_probability": 0.8
   "test":
     "type": "transparent-grasp"
     "data_dir": "data"
-    "image_size": !!python/tuple [320, 240]
+    "image_size": !!python/tuple [1280, 720]
     "use_augmentation": False
 
 "dataloader":
-  "num_workers": 48
+  "num_workers": 16
   "shuffle": True
-  "drop_last": True
 
 "trainer":
-  "batch_size": 32
+  "batch_size": 8
   "test_batch_size": 1
   "multigpu": True
-  "max_epoch": 40  
+  "max_epoch": 40
   "criterion":
     "type": "custom_masked_mse_loss"
     "epsilon": 0.00000001
@@ -50,4 +50,4 @@
 
 "stats":
   "stats_dir": "stats"
-  "stats_exper": "small"
+  "stats_exper": "train-tg-val-tg-1280x720"

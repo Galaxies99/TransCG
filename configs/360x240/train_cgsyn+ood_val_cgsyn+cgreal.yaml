@@ -1,3 +1,4 @@
+# script id: 4
 "model":
   "type": "DFNet"
   "params":
@@ -19,24 +20,33 @@
 
 "dataset":
   "train":
-    "type": "cleargrasp-syn"
-    "data_dir": "data-cleargrasp"
-    "image_size": !!python/tuple [320, 240]
-    "use_augmentation": True
-    "rgb_augmentation_probability": 0.8
+    - "type": "cleargrasp-syn"
+      "data_dir": "data-cleargrasp"
+      "image_size": !!python/tuple [320, 240]
+      "use_augmentation": True
+      "rgb_augmentation_probability": 0.8
+    - "type": "omniverse"
+      "data_dir": "data-omniverse"
+      "image_size": !!python/tuple [320, 240]
+      "use_augmentation": True
+      "rgb_augmentation_probability": 0.8
   "test":
-    "type": "transparent-object"
-    "data_dir": "data-keypose"
-    "image_size": !!python/tuple [320, 240]
-    "use_augmentation": False
+    - "type": "cleargrasp-syn"
+      "data_dir": "data-cleargrasp"
+      "image_size": !!python/tuple [320, 240]
+      "use_augmentation": False
+    - "type": "cleargrasp-real"
+      "data_dir": "data-cleargrasp"
+      "image_size": !!python/tuple [320, 240]
+      "use_augmentation": False
 
 "dataloader":
-  "num_workers": 72
+  "num_workers": 48
   "shuffle": True
   "drop_last": True
 
 "trainer":
-  "batch_size": 64
+  "batch_size": 32
   "test_batch_size": 1
   "multigpu": True
   "max_epoch": 40  
@@ -50,4 +60,4 @@
 
 "stats":
   "stats_dir": "stats"
-  "stats_exper": "small-cg"
+  "stats_exper": "train-cgsyn-ood-val-cgsyn-cgreal"

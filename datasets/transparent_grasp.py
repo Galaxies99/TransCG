@@ -33,6 +33,9 @@ class TransparentGrasp(Dataset):
             raise AttributeError('Invalid split option.')
         self.data_dir = data_dir
         self.split = split
+        self.high_resolution = kwargs.get('high_resolution', False)
+        if self.high_resolution and split == 'train':
+            raise AttributeError('Does not support returning high resolution images during training. If you want to train on high resolution samples, please set image_size arguments in high resolution.')
         with open(os.path.join(self.data_dir, 'metadata.json'), 'r') as fp:
             self.dataset_metadata = json.load(fp)
         self.scene_num = self.dataset_metadata['total_scenes']
@@ -71,7 +74,7 @@ class TransparentGrasp(Dataset):
         depth = np.array(Image.open(os.path.join(img_path, 'depth{}.png'.format(camera_type))), dtype = np.float32)
         depth_gt = np.array(Image.open(os.path.join(img_path, 'depth{}-gt.png'.format(camera_type))), dtype = np.float32)
         depth_gt_mask = np.array(Image.open(os.path.join(img_path, 'depth{}-gt-mask.png'.format(camera_type))), dtype = np.uint8)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type, camera_type, split = self.split, image_size = self.image_size, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type, camera_type, split = self.split, image_size = self.image_size, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, retain_original = self.high_resolution)
     
     def __len__(self):
         return self.total_samples

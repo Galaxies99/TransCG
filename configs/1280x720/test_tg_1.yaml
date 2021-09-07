@@ -1,0 +1,49 @@
+# script id: 1
+"model":
+  "type": "DFNet"
+  "params":
+    "in_channels": 4
+    "hidden_channels": 64
+    "L": 5
+    "k": 12
+
+"optimizer":
+  "type": "AdamW"
+  "params":
+    "lr": 0.001
+
+"lr_scheduler":
+  "type": "MultiStepLR"
+  "params":
+    "milestones": [5, 15, 25, 35]
+    "gamma": 0.2
+
+"dataset":
+  "train":
+  "test":
+    "type": "transparent-grasp"
+    "data_dir": "data"
+    "image_size": !!python/tuple [1280, 720]
+    "use_augmentation": False
+
+"dataloader":
+  "num_workers": 48
+  "shuffle": True
+  "drop_last": True
+
+"trainer":
+  "batch_size": 32
+  "test_batch_size": 1
+  "multigpu": True
+  "max_epoch": 40  
+  "criterion":
+    "type": "custom_masked_mse_loss"
+    "epsilon": 0.00000001
+
+"metrics":
+  "types": ["MSE", "MaskedMSE", "RMSE", "MaskedRMSE", "REL", "MaskedREL", "MAE", "MaskedMAE", "Threshold@1.05", "MaskedThreshold@1.05", "Threshold@1.10", "MaskedThreshold@1.10", "Threshold@1.25", "MaskedThreshold@1.25"]
+  "epsilon": 0.00000001
+
+"stats":
+  "stats_dir": "stats"
+  "stats_exper": "train-tg-val-tg-1280x720"

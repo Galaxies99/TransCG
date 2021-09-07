@@ -145,7 +145,39 @@ def exr_loader(exr_path, ndim=3, ndim_representation = ['R', 'G', 'B']):
         return exr_arr
 
 
-def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = 'train', image_size = (720, 1280), use_aug = True, rgb_aug_prob = 0.8, **kwargs):
+def process_depth(depth, camera_type = 0, depth_max = 10):
+    """
+    Process the depth information, including scaling, normalization and clear NaN values.
+    
+    Paramters
+    ---------
+
+    depth: array, required, the depth image;
+
+    camera_type: int in [0, 1, 2], optional, default: 0, the camera type;
+        - 0: no scale is applied;
+        - 1: scale 1000 (RealSense D415, RealSense D435, etc.);
+        - 2: scale 4000 (RealSense L515).
+    
+    depth_max: float, optional, default: 10, the maximum depth (used for normalization).
+
+    Returns
+    -------
+
+    The depth image after scaling.
+    """
+    scale_coeff = 1
+    if camera_type == 1:
+        scale_coeff = 1000
+    if camera_type == 2:
+        scale_coeff = 4000
+    depth = depth / scale_coeff
+    depth = np.where(depth > 10, 1, depth / 10)
+    depth[np.isnan(depth)] = 0.0
+    return depth
+
+
+def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = 'train', image_size = (720, 1280), use_aug = True, rgb_aug_prob = 0.8, retain_original = False, **kwargs):
     """
     Process images and perform data augmentation.
 
@@ -173,7 +205,9 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     
     use_aug: bool, optional, default: True, whether use data augmentation;
     
-    rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True).
+    rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True);
+
+    retain_original: bool, optional, default: False, whether to retain original samples.
 
     Returns
     -------
@@ -181,28 +215,20 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     rgb, depth, depth_gt, depth_gt_mask, scene_mask tensors for training and testing.
     """
 
+    if retain_original:
+        depth_original = process_depth(depth.copy(), camera_type = camera_type)
+        depth_gt_original = process_depth(depth_gt.copy(), camera_type = camera_type)
+        depth_gt_mask_original = depth_gt_mask.copy()
+
     rgb = cv2.resize(rgb, image_size, interpolation = cv2.INTER_NEAREST)
     depth = cv2.resize(depth, image_size, interpolation = cv2.INTER_NEAREST)
     depth_gt = cv2.resize(depth_gt, image_size, interpolation = cv2.INTER_NEAREST)
     depth_gt_mask = cv2.resize(depth_gt_mask, image_size, interpolation = cv2.INTER_NEAREST)
     depth_gt_mask = depth_gt_mask.astype(np.bool)
 
-    # depth scaling
-    scale_coeff = 1
-    if camera_type == 1:
-        scale_coeff = 1000
-    if camera_type == 2:
-        scale_coeff = 4000
-    depth = depth / scale_coeff
-    depth_gt = depth_gt / scale_coeff
-
-    # Depth Normalization
-    depth = np.where(depth > 10, 1, depth / 10)
-    depth_gt = np.where(depth_gt > 10, 1, depth_gt / 10)
-
-    # Clear NaN Value
-    depth[np.isnan(depth)] = 0.0
-    depth_gt[np.isnan(depth_gt)] = 0.0
+    # depth processing
+    depth = process_depth(depth, camera_type = camera_type)
+    depth_gt = process_depth(depth_gt, camera_type = camera_type)
 
     # RGB augmentation.
     if split == 'train' and use_aug and np.random.rand(1) > 1 - rgb_aug_prob:
@@ -236,5 +262,8 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
 
     # process scene mask
     scene_mask = np.array([1 if scene_type == 'cluttered' else 0], dtype = np.bool)
-
-    return torch.FloatTensor(rgb), torch.FloatTensor(depth), torch.FloatTensor(depth_gt), torch.BoolTensor(depth_gt_mask), torch.BoolTensor(scene_mask)
+    
+    if retain_original:
+        return torch.FloatTensor(rgb), torch.FloatTensor(depth), torch.FloatTensor(depth_gt), torch.BoolTensor(depth_gt_mask), torch.BoolTensor(scene_mask), torch.FloatTensor(depth_original), torch.FloatTensor(depth_gt_original), torch.BoolTensor(depth_gt_mask_original)
+    else:
+        return torch.FloatTensor(rgb), torch.FloatTensor(depth), torch.FloatTensor(depth_gt), torch.BoolTensor(depth_gt_mask), torch.BoolTensor(scene_mask)
