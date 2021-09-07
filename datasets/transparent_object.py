@@ -51,9 +51,26 @@ class TransparentObject(Dataset):
                 self.depth_paths += cur_depth_paths
                 self.depth_gt_paths += cur_depth_gt_paths
         # Integrity double-check
+        self.remove_damaged_samples()
         assert len(self.image_paths) == len(self.depth_paths) and len(self.depth_paths) == len(self.depth_gt_paths)
         self.image_size = kwargs.get('image_size', (1280, 720))
     
+    def remove_damaged_samples(self):
+        damaged_list = [
+            os.path.join('mug_3', 'texture_8_pose_3', '000010'),
+            os.path.join('mug_4', 'texture_4_pose_1', '000013')
+        ]
+        for item in self.image_paths:
+            rm = False
+            for d in damaged_list:
+                if d in item:
+                    rm = True
+                    break
+            if rm:
+                self.image_paths.remove(item)
+                self.depth_paths.remove(item.replace('_L.png', '_Dt.exr'))
+                self.depth_gt_paths.remove(item.replace('_L.png', '_Do.exr'))
+
     def __getitem__(self, id):
         rgba = np.array(Image.open(self.image_paths[id]).convert('RGBA'), dtype = np.float32)
         rgb = rgba[..., :3].copy()

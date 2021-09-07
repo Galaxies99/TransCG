@@ -38,7 +38,9 @@ class Criterion(nn.Module):
         """
         mask = torch.where(gt < self.epsilon, False, True)
         delta = (pred - gt) ** 2
-        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.where(mask_base < self.epsilon, mask_base + self.epsilon, mask_base)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / mask_base
         return torch.mean(loss)
     
     def masked_mse_loss(self, pred, gt, gt_mask, *args, **kwargs):
@@ -62,7 +64,9 @@ class Criterion(nn.Module):
         zero_mask = torch.where(gt < self.epsilon, False, True)
         mask = gt_mask & zero_mask
         delta = (pred - gt) ** 2
-        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.where(mask_base < self.epsilon, mask_base + self.epsilon, mask_base)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / mask_base
         return torch.mean(loss)
     
     def custom_masked_mse_loss(self, pred, gt, gt_mask, use_gt_mask, *args, **kwargs):
@@ -90,7 +94,9 @@ class Criterion(nn.Module):
         gt_mask = ~ (~ gt_mask & use_gt_mask.transpose(0, 2))
         mask = gt_mask & zero_mask
         delta = (pred - gt) ** 2
-        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.where(mask_base < self.epsilon, mask_base + self.epsilon, mask_base)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / mask_base
         return torch.mean(loss)
     
     def l1_loss(self, pred, gt, *args, **kwargs):
@@ -111,7 +117,9 @@ class Criterion(nn.Module):
         """
         mask = torch.where(gt < self.epsilon, False, True)
         delta = torch.abs(pred - gt)
-        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.where(mask_base < self.epsilon, mask_base + self.epsilon, mask_base)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / mask_base
         return torch.mean(loss)
     
     def masked_l1_loss(self, pred, gt, gt_mask, *args, **kwargs):
@@ -135,7 +143,9 @@ class Criterion(nn.Module):
         zero_mask = torch.where(gt < self.epsilon, False, True)
         mask = gt_mask & zero_mask
         delta = torch.abs(pred - gt)
-        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.where(mask_base < self.epsilon, mask_base + self.epsilon, mask_base)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / mask_base
         return torch.mean(loss)
     
     def custom_masked_l1_loss(self, pred, gt, gt_mask, use_gt_mask, *args, **kwargs):
@@ -163,5 +173,7 @@ class Criterion(nn.Module):
         gt_mask = ~ (~ gt_mask & use_gt_mask.transpose(0, 2))
         mask = gt_mask & zero_mask
         delta = torch.abs(pred - gt)
-        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.sum(mask.float(), dim = [1, 2])
+        mask_base = torch.where(mask_base < self.epsilon, mask_base + self.epsilon, mask_base)
+        loss = torch.sum(delta * mask.float(), dim = [1, 2]) / mask_base
         return torch.mean(loss)

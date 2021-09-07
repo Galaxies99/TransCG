@@ -15,7 +15,7 @@ import numpy as np
 from glob import glob
 from PIL import Image
 from torch.utils.data import Dataset
-from utils.data_preparation import process_data, add_noise_to_depth
+from utils.data_preparation import process_data
 
 
 class OmniverseObject(Dataset):
@@ -48,6 +48,7 @@ class OmniverseObject(Dataset):
         self.use_aug = kwargs.get('use_augmentation', True)
         self.rgb_aug_prob = kwargs.get('rgb_augmentation_probability', 0.8)
         self.image_size = kwargs.get('image_size', (1280, 720))
+        self.epsilon = kwargs.get('epsilon', 1e-8)
            
     def get_transparent_mask(self, instance_mask, semantic_mask, instance_num, corrupt_all=False, ratio_low=0.4, ratio_high=0.8):
         """
@@ -57,7 +58,7 @@ class OmniverseObject(Dataset):
         """
         rng = np.random.default_rng()
         corrupt_mask = np.zeros((instance_mask.shape[0], instance_mask.shape[1]))
-        if self.exp_type == 'train':
+        if self.split == 'train':
             if corrupt_all:
                 corrupt_obj_num = instance_num
                 corrupt_obj_ids = np.arange(instance_num)
@@ -103,17 +104,19 @@ class OmniverseObject(Dataset):
         rgb = cv2.cvtColor(f['rgb_glass'][:], cv2.COLOR_RGB2BGR)
         # depth-gt-mask
         instance_seg = f['instance_seg'][:]
-        instance_id = np.arange(1, instance_seg.shape[0]+1).reshape(-1, 1, 1)
-        instance_mask = np.sum(instance_seg * instance_id,0).astype(np.uint8)
+        instance_id = np.arange(1, instance_seg.shape[0] + 1).reshape(-1, 1, 1)
+        instance_mask = np.sum(instance_seg * instance_id, 0).astype(np.uint8)
         semantic_seg = f['semantic_seg'][:]
-        semantic_id = np.arange(1, semantic_seg.shape[0]+1).reshape(-1, 1, 1)
-        semantic_mask = np.sum(semantic_seg * semantic_id,0).astype(np.uint8)
+        semantic_id = np.arange(1, semantic_seg.shape[0] + 1).reshape(-1, 1, 1)
+        semantic_mask = np.sum(semantic_seg * semantic_id, 0).astype(np.uint8)
         depth_gt_mask = self.get_transparent_mask(instance_mask, semantic_mask, instance_seg.shape[0], ratio_low = 0.3, ratio_high = 0.7)
+        depth_gt_mask[depth_gt_mask != 0] = 1
         # depth, depth-gt
         disparity = f['depth'][:]
         depth_gt = 1. / (disparity + self.epsilon) * 0.01
-        depth_gt = np.clip(depth_gt, 0, 4)
-        depth = depth_gt.copy() * (1 - depth_gt_mask.float())
+        depth_gt = np.clip(depth_gt, 0, 10)
+        depth = depth_gt.copy() * (1 - depth_gt_mask)
+        depth_gt_mask = depth_gt_mask.astype(np.uint8)
         return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = self.split, image_size = self.image_size, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
     
     def __len__(self):

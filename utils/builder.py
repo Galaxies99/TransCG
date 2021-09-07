@@ -4,7 +4,13 @@ Configuration builder.
 Authors: Hongjie Fang.
 """
 import os
+import logging
+from utils.logger import ColoredLogger
 from torch.utils.data import ConcatDataset
+
+
+logging.setLoggerClass(ColoredLogger)
+logger = logging.getLogger(__name__)
 
 
 class ConfigBuilder(object):
@@ -191,6 +197,7 @@ class ConfigBuilder(object):
                 dataset = TransparentObject(split = split, **dataset_params)
             else:
                 raise NotImplementedError('Invalid dataset type.')
+            logger.info('Load {} dataset as {}ing set with {} samples.'.format(dataset_type, split, len(dataset)))
         elif type(dataset_params) == list:
             dataset_types = []
             dataset_list = []
@@ -212,7 +219,8 @@ class ConfigBuilder(object):
                     dataset = TransparentObject(split = split, **single_dataset_params)
                 else:
                     raise NotImplementedError('Invalid dataset type.')
-                dataset_list.appen(dataset)
+                dataset_list.append(dataset)
+                logger.info('Load {} dataset as {}ing set with {} samples.'.format(dataset_type, split, len(dataset)))
             dataset = ConcatDataset(dataset_list)
         else:
             raise AttributeError('Invalid dataset format.')

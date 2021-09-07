@@ -83,7 +83,7 @@ class ClearGraspSynthetic(Dataset):
         self.image_paths = []
         self.mask_paths = []
         self.depth_gt_paths = []
-        if split == 'train':
+        if split == 'test':
             secondary_dir = 'cleargrasp-dataset-test-val'
             data_type_list = ['synthetic-test', 'synthetic-val']
         else:
@@ -94,8 +94,8 @@ class ClearGraspSynthetic(Dataset):
             for scene in os.listdir(cur_path_before_scene):
                 cur_path = os.path.join(cur_path_before_scene, scene)
                 cur_image_paths = sorted(glob(os.path.join(cur_path, 'rgb-imgs', '*-rgb.jpg')))
-                cur_mask_paths = [p.replace('rgb-imgs', 'segmentation-masks').replace('-rgb.jpg', '-segmentation-mask.png') for p in cur_path]
-                cur_depth_gt_paths = [p.replace('rgb-imgs', 'depth-imgs-rectified').replace('-rgb.jpg', '-depth-rectified.exr') for p in cur_path]
+                cur_mask_paths = [p.replace('rgb-imgs', 'segmentation-masks').replace('-rgb.jpg', '-segmentation-mask.png') for p in cur_image_paths]
+                cur_depth_gt_paths = [p.replace('rgb-imgs', 'depth-imgs-rectified').replace('-rgb.jpg', '-depth-rectified.exr') for p in cur_image_paths]
                 self.image_paths += cur_image_paths
                 self.mask_paths += cur_mask_paths
                 self.depth_gt_paths += cur_depth_gt_paths
@@ -110,7 +110,8 @@ class ClearGraspSynthetic(Dataset):
         depth_gt = exr_loader(self.depth_gt_paths[id], ndim = 1, ndim_representation = ['R'])
         depth_gt_mask = np.array(Image.open(self.mask_paths[id]), dtype = np.uint8)
         depth_gt_mask[depth_gt_mask != 0] = 1
-        depth = depth_gt.copy() * (1 - depth_gt_mask.float())
+        depth = depth_gt.copy() * (1 - depth_gt_mask)
+        depth_gt_mask = depth_gt_mask.astype(np.uint8)
         return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
 
     def __len__(self):
