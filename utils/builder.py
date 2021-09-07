@@ -80,7 +80,7 @@ class ConfigBuilder(object):
             raise NotImplementedError('Invalid model type.')
         return model
     
-    def get_optimizer(self, model, optimizer_params = None, resume = False):
+    def get_optimizer(self, model, optimizer_params = None, resume = False, resume_lr = None):
         """
         Get the optimizer from configuration.
         
@@ -91,7 +91,9 @@ class ConfigBuilder(object):
         
         optimizer_params: dict, optional, default: None. If optimizer_params is provided, then use the parameters specified in the optimizer_params to build the optimizer. Otherwise, the optimizer parameters in the self.params will be used to build the optimizer;
         
-        resume: bool, optional, default: False, whether to resume training from an existing checkpoint.
+        resume: bool, optional, default: False, whether to resume training from an existing checkpoint;
+
+        resume_lr: float, optional, default: None, the resume learning rate.
         
         Returns
         -------
@@ -104,7 +106,8 @@ class ConfigBuilder(object):
         type = optimizer_params.get('type', 'AdamW')
         params = optimizer_params.get('params', {})
         if resume:
-            network_params = [{'params': model.parameters(), 'initial_lr': params.get('lr', 0.001)}]
+            network_params = [{'params': model.parameters(), 'initial_lr': resume_lr}]
+            params.update(lr = resume_lr)
         else:
             network_params = model.parameters()
         if type == 'SGD':
@@ -332,6 +335,24 @@ class ConfigBuilder(object):
             trainer_params = self.trainer_params
         return trainer_params.get('multigpu', False)
     
+    def get_resume_lr(self, trainer_params = None):
+        """
+        Get the resume learning rate from configuration.
+
+        Parameters
+        ----------
+
+        trainer_params: dict, optional, default: None. If trainer_params is provided, then use the parameters specified in the trainer_params to get the multigpu flag. Otherwise, the trainer parameters in the self.params will be used to get the multigpu flag.
+
+        Returns
+        -------
+
+        A float value, the resume lr (default: 0.001).
+        """
+        if trainer_params is None:
+            trainer_params = self.trainer_params
+        return trainer_params.get('resume_lr', False)
+
     def get_criterion(self, criterion_params = None):
         """
         Get the criterion settings from configuration.

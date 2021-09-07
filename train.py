@@ -70,7 +70,7 @@ if os.path.isfile(checkpoint_file):
 
 logger.info('Building optimizer and learning rate schedulers ...')
 resume = (start_epoch > 0)
-optimizer = builder.get_optimizer(model, resume = resume)
+optimizer = builder.get_optimizer(model, resume = resume, resume_lr = builder.get_resume_lr())
 lr_scheduler = builder.get_lr_scheduler(optimizer, resume = resume, resume_epoch = (start_epoch - 1 if resume else None))
 
 if builder.multigpu():
@@ -83,7 +83,7 @@ metrics = builder.get_metrics()
 def train_one_epoch(epoch):
     logger.info('Start training process in epoch {}.'.format(epoch + 1))
     if lr_scheduler is not None:
-        logger.info('Learning rate: {}.'.format(lr_scheduler.get_lr()))
+        logger.info('Learning rate: {}.'.format(lr_scheduler.get_last_lr()))
     model.train()
     losses = []
     with tqdm(train_dataloader) as pbar:
