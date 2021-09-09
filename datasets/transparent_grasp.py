@@ -67,6 +67,8 @@ class TransparentGrasp(Dataset):
         self.use_aug = kwargs.get('use_augmentation', True)
         self.rgb_aug_prob = kwargs.get('rgb_augmentation_probability', 0.8)
         self.image_size = kwargs.get('image_size', (1280, 720))
+        self.depth_min = kwargs.get('depth_min', 0.0)
+        self.depth_max = kwargs.get('depth_max', 10.0)
 
     def __getitem__(self, id):
         img_path, camera_type, scene_type = self.sample_info[id]
@@ -74,7 +76,7 @@ class TransparentGrasp(Dataset):
         depth = np.array(Image.open(os.path.join(img_path, 'depth{}.png'.format(camera_type))), dtype = np.float32)
         depth_gt = np.array(Image.open(os.path.join(img_path, 'depth{}-gt.png'.format(camera_type))), dtype = np.float32)
         depth_gt_mask = np.array(Image.open(os.path.join(img_path, 'depth{}-gt-mask.png'.format(camera_type))), dtype = np.uint8)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type, camera_type, split = self.split, image_size = self.image_size, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, retain_original = self.high_resolution)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type, camera_type, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, retain_original = self.high_resolution)
     
     def __len__(self):
         return self.total_samples

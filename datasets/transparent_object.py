@@ -54,6 +54,8 @@ class TransparentObject(Dataset):
         self.remove_damaged_samples()
         assert len(self.image_paths) == len(self.depth_paths) and len(self.depth_paths) == len(self.depth_gt_paths)
         self.image_size = kwargs.get('image_size', (1280, 720))
+        self.depth_min = kwargs.get('depth_min', 0.0)
+        self.depth_max = kwargs.get('depth_max', 10.0)
     
     def remove_damaged_samples(self):
         damaged_list = [
@@ -78,7 +80,7 @@ class TransparentObject(Dataset):
         depth_gt = exr_loader(self.depth_gt_paths[id], ndim = 1, ndim_representation = ['D'])
         depth_gt_mask = rgba[..., 3].copy() # Not always available.
         depth_gt_mask[depth_gt_mask != 0] = 1
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, use_aug = False)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, use_aug = False)
     
     def __len__(self):
         return len(self.image_paths)

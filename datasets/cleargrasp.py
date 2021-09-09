@@ -57,6 +57,8 @@ class ClearGraspRealWorld(Dataset):
         # Integrity double-check
         assert len(self.image_paths) == len(self.mask_paths) and len(self.mask_paths) == len(self.depth_paths) and len(self.depth_paths) == len(self.depth_gt_paths)
         self.image_size = kwargs.get('image_size', (1280, 720))
+        self.depth_min = kwargs.get('depth_min', 0.0)
+        self.depth_max = kwargs.get('depth_max', 10.0)
     
     def __getitem__(self, id):
         rgb = np.array(Image.open(self.image_paths[id]), dtype = np.float32)
@@ -64,7 +66,7 @@ class ClearGraspRealWorld(Dataset):
         depth_gt = exr_loader(self.depth_gt_paths[id], ndim = 1, ndim_representation = ['R'])
         depth_gt_mask = np.array(Image.open(self.mask_paths[id]), dtype = np.uint8)
         depth_gt_mask[depth_gt_mask != 0] = 1
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, use_aug = False)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, use_aug = False)
 
     def __len__(self):
         return len(self.image_paths)
@@ -104,6 +106,8 @@ class ClearGraspSynthetic(Dataset):
         self.image_size = kwargs.get('image_size', (1280, 720))
         self.use_aug = kwargs.get('use_augmentation', True)
         self.rgb_aug_prob = kwargs.get('rgb_augmentation_probability', 0.8)
+        self.depth_min = kwargs.get('depth_min', 0.0)
+        self.depth_max = kwargs.get('depth_max', 10.0)
 
     def __getitem__(self, id):
         rgb = np.array(Image.open(self.image_paths[id]), dtype = np.float32)
@@ -112,7 +116,7 @@ class ClearGraspSynthetic(Dataset):
         depth_gt_mask[depth_gt_mask != 0] = 1
         depth = depth_gt.copy() * (1 - depth_gt_mask)
         depth_gt_mask = depth_gt_mask.astype(np.uint8)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
 
     def __len__(self):
         return len(self.image_paths)

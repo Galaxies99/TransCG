@@ -65,6 +65,7 @@ class Inferencer(object):
             raise FileNotFoundError('No checkpoint.')
         
         self.image_size = self.builder.get_inference_image_size()
+        self.depth_min, self.depth_max = self.builder.get_inference_depth_min_max()
 
     def inference(self, rgb, depth, target_size = (1280, 720)):
         """
@@ -85,6 +86,7 @@ class Inferencer(object):
         
         rgb = cv2.resize(rgb, self.image_size, interpolation = cv2.INTER_NEAREST)
         depth = cv2.resize(depth, self.image_size, interpolation = cv2.INTER_NEAREST)
+        depth = (depth - self.depth_min) / (self.depth_max - self.depth_min)
         rgb = (rgb / 255.0).transpose(2, 0, 1)
         rgb = torch.FloatTensor(rgb).to(self.device).unsqueeze(0)
         depth = torch.FloatTensor(depth).to(self.device).unsqueeze(0)
@@ -94,7 +96,8 @@ class Inferencer(object):
             time_end = perf_counter()
         if self.with_info:
             self.logger.info("Inference finished, time: {:.4f}s.".format(time_end - time_start))
-        depth_res = depth_res.squeeze(0).cpu().detach().numpy() 
-        depth_res = cv2.resize(depth_res, target_size, interpolation = cv2.INTER_CUBIC)
+        depth_res = depth_res.squeeze(0).cpu().detach().numpy()
+        depth_res = depth_res * (self.depth_max - self.depth_min) + self.depth_min
+        depth_res = cv2.resize(depth_res, target_size, interpolation = cv2.INTER_NEAREST)
         return depth_res
     

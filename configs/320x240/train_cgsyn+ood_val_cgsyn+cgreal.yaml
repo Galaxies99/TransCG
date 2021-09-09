@@ -25,20 +25,28 @@
       "image_size": !!python/tuple [320, 240]
       "use_augmentation": True
       "rgb_augmentation_probability": 0.8
+      "depth_min": 0.0
+      "depth_max": 10.0
     - "type": "omniverse"
       "data_dir": "data-omniverse"
       "image_size": !!python/tuple [320, 240]
       "use_augmentation": True
       "rgb_augmentation_probability": 0.8
+      "depth_min": 0.0
+      "depth_max": 10.0
   "test":
     - "type": "cleargrasp-syn"
       "data_dir": "data-cleargrasp"
       "image_size": !!python/tuple [320, 240]
       "use_augmentation": False
+      "depth_min": 0.0
+      "depth_max": 10.0
     - "type": "cleargrasp-real"
       "data_dir": "data-cleargrasp"
       "image_size": !!python/tuple [320, 240]
       "use_augmentation": False
+      "depth_min": 0.0
+      "depth_max": 10.0
 
 "dataloader":
   "num_workers": 48

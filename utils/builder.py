@@ -371,9 +371,8 @@ class ConfigBuilder(object):
         if criterion_params is None:
             criterion_params = self.trainer_params.get('criterion', {})
         loss_type = criterion_params.get('type', 'custom_masked_mse_loss')
-        loss_epsilon = criterion_params.get('epsilon', 1e-8)
         from utils.criterion import Criterion
-        criterion = Criterion(loss_type = loss_type, epsilon = loss_epsilon)
+        criterion = Criterion(**criterion_params)
         return criterion
     
     def get_metrics(self, metrics_params = None):
@@ -451,3 +450,23 @@ class ConfigBuilder(object):
         if inference_params is None:
             inference_params = self.inference_params
         return inference_params.get('cuda_id', 0)
+
+    def get_inference_depth_min_max(self, inference_params = None):
+        """
+        Get the min and max depth from inference configuration.
+
+        Parameters
+        ----------
+
+        inference_params: dict, optional, default: None. If inference_params is provided, then use the parameters specified in the inference_params to get the inference depth range. Otherwise, the inference parameters in the self.params will be used to get the inference depth range.
+        
+        Returns
+        -------
+
+        Tuple of (int, int) the min and max depth.
+        """
+        if inference_params is None:
+            inference_params = self.inference_params
+        depth_min = inference_params.get('depth_min', 0.1)
+        depth_max = inference_params.get('depth_max', 1.5)
+        return depth_min, depth_max
