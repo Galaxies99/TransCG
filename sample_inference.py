@@ -43,18 +43,18 @@ def draw_point_cloud(color, depth, camera_intrinsics, use_mask = False, use_inpa
     return cloud
 
 
-inferencer = Inferencer()
+# inferencer = Inferencer()
 
-rgb = np.array(Image.open('data/scene6/0/rgb1.png'), dtype = np.float32)
-depth = np.array(Image.open('data/scene6/0/depth1.png'), dtype = np.float32)
+rgb = np.array(Image.open('data/scene6/214/rgb2.png'), dtype = np.float32)
+depth = np.array(Image.open('data/scene6/214/depth2-gt.png'), dtype = np.float32)
 
-depth = depth / 1000
+depth = depth / 4000
 
-res = inferencer.inference(rgb, depth)
+# res = inferencer.inference(rgb, depth)
 
-cam_intrinsics = np.load('data/camera_intrinsics/camIntrinsics-D435.npy')
+cam_intrinsics = np.load('data/camera_intrinsics/camIntrinsics-L515.npy')
 
-cloud = draw_point_cloud(rgb, res, cam_intrinsics, scale = 1.0)
+cloud = draw_point_cloud(rgb, depth, cam_intrinsics, scale = 1.0)
 
 frame = o3d.geometry.TriangleMesh.create_coordinate_frame(0.1)
 sphere = o3d.geometry.TriangleMesh.create_sphere(0.002,20).translate([0,0,0.490])
