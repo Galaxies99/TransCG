@@ -145,7 +145,7 @@ def exr_loader(exr_path, ndim=3, ndim_representation = ['R', 'G', 'B']):
         return exr_arr
 
 
-def process_depth(depth, camera_type = 0, depth_max = 10):
+def process_depth(depth, camera_type = 0, with_norm = False, depth_max = 10):
     """
     Process the depth information, including scaling, normalization and clear NaN values.
     
@@ -158,6 +158,8 @@ def process_depth(depth, camera_type = 0, depth_max = 10):
         - 0: no scale is applied;
         - 1: scale 1000 (RealSense D415, RealSense D435, etc.);
         - 2: scale 4000 (RealSense L515).
+    
+    with_norm: bool, optional, default: False, whether to normalize depth information. 
     
     depth_max: float, optional, default: 10, the maximum depth (used for normalization).
 
@@ -172,12 +174,13 @@ def process_depth(depth, camera_type = 0, depth_max = 10):
     if camera_type == 2:
         scale_coeff = 4000
     depth = depth / scale_coeff
-    depth = np.where(depth > 10, 1, depth / 10)
+    if with_norm:
+        depth = np.where(depth > depth_max, 1, depth / depth_max)
     depth[np.isnan(depth)] = 0.0
     return depth
 
 
-def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = 'train', image_size = (720, 1280), use_aug = True, rgb_aug_prob = 0.8, retain_original = False, **kwargs):
+def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = 'train', image_size = (720, 1280), with_depth_norm = False, use_aug = True, rgb_aug_prob = 0.8, retain_original = False, **kwargs):
     """
     Process images and perform data augmentation.
 
@@ -203,6 +206,8 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     
     image_size: (int, int) tuple, optional, default: (720, 1280), the size of the image;
     
+    with_depth_norm: bool, optional, default: False, whether to normalize depth information. 
+
     use_aug: bool, optional, default: True, whether use data augmentation;
     
     rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True);
@@ -227,8 +232,8 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     depth_gt_mask = depth_gt_mask.astype(np.bool)
 
     # depth processing
-    depth = process_depth(depth, camera_type = camera_type)
-    depth_gt = process_depth(depth_gt, camera_type = camera_type)
+    depth = process_depth(depth, camera_type = camera_type, with_norm = with_depth_norm)
+    depth_gt = process_depth(depth_gt, camera_type = camera_type, with_norm = with_depth_norm)
 
     # RGB augmentation.
     if split == 'train' and use_aug and np.random.rand(1) > 1 - rgb_aug_prob:

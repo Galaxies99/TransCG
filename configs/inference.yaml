@@ -1,0 +1,12 @@
+"model":
+  "type": "DFNet"
+  "params":
+    "in_channels": 4
+    "hidden_channels": 64
+    "L": 5
+    "k": 12
+
+"inference":
+  "checkpoint_path": "stats/train-tg-val-tg/checkpoint.tar"
+  "image_size": !!python/tuple [320, 240]
+  "cuda_id": 0

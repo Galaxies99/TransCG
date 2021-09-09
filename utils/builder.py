@@ -54,6 +54,7 @@ class ConfigBuilder(object):
         self.trainer_params = params.get('trainer', {})
         self.metrics_params = params.get('metrics', {})
         self.stats_params = params.get('stats', {})
+        self.inference_params = params.get('inference', {})
     
     def get_model(self, model_params = None):
         """
@@ -382,7 +383,7 @@ class ConfigBuilder(object):
         Parameters
         ----------
 
-        metrics_params: dict, optional, default: None. If metrics_params is provided, then use the parameters specified in the metrics_params to get the metrics. Otherwise, the metrics parameters in the self.params will be used to get the metrics
+        metrics_params: dict, optional, default: None. If metrics_params is provided, then use the parameters specified in the metrics_params to get the metrics. Otherwise, the metrics parameters in the self.params will be used to get the metrics.
         
         Returns
         -------
@@ -396,3 +397,57 @@ class ConfigBuilder(object):
         from utils.metrics import MetricsRecorder
         metrics = MetricsRecorder(metrics_list = metrics_list, epsilon = metrics_epsilon)
         return metrics
+    
+    def get_inference_image_size(self, inference_params = None):
+        """
+        Get the inference image size from inference configuration.
+
+        Parameters
+        ----------
+
+        inference_params: dict, optional, default: None. If inference_params is provided, then use the parameters specified in the inference_params to get the inference image size. Otherwise, the inference parameters in the self.params will be used to get the inference image size.
+        
+        Returns
+        -------
+
+        Tuple of (int, int), the image size.
+        """
+        if inference_params is None:
+            inference_params = self.inference_params
+        return inference_params.get('image_size', (320, 240))
+    
+    def get_inference_checkpoint_path(self, inference_params = None):
+        """
+        Get the inference checkpoint path from inference configuration.
+
+        Parameters
+        ----------
+
+        inference_params: dict, optional, default: None. If inference_params is provided, then use the parameters specified in the inference_params to get the inference checkpoint path. Otherwise, the inference parameters in the self.params will be used to get the inference checkpoint path.
+        
+        Returns
+        -------
+
+        str, the checkpoint path.
+        """
+        if inference_params is None:
+            inference_params = self.inference_params
+        return inference_params.get('checkpoint_path', os.path.join('checkpoint', 'checkpoint.tar'))
+    
+    def get_inference_cuda_id(self, inference_params = None):
+        """
+        Get the inference CUDA ID from inference configuration.
+
+        Parameters
+        ----------
+
+        inference_params: dict, optional, default: None. If inference_params is provided, then use the parameters specified in the inference_params to get the inference CUDA ID. Otherwise, the inference parameters in the self.params will be used to get the inference CUDA ID.
+        
+        Returns
+        -------
+
+        int, the CUDA ID.
+        """
+        if inference_params is None:
+            inference_params = self.inference_params
+        return inference_params.get('cuda_id', 0)
