@@ -15,12 +15,13 @@ class DFNet(nn.Module):
     """
     Depth Filler Network (DFNet).
     """
-    def __init__(self, in_channels = 4, hidden_channels = 64, L = 5, k = 12, **kwargs):
+    def __init__(self, in_channels = 4, hidden_channels = 64, L = 5, k = 12, use_DUC = True, **kwargs):
         super(DFNet, self).__init__()
         self.in_channels = in_channels
         self.hidden_channels = hidden_channels
         self.L = L
         self.k = k
+        self.use_DUC = use_DUC
         # First
         self.first = nn.Sequential(
             nn.Conv2d(self.in_channels, self.hidden_channels, kernel_size = 3, stride = 2, padding = 1),
@@ -118,7 +119,7 @@ class DFNet(nn.Module):
             nn.ReLU(True)
         )
         self.updense1 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
-        self.updense1_duc = DenseUpsamplingConvolution(self.k, self.hidden_channels, upscale_factor = 2)
+        self.updense1_duc = self._make_upconv(self.k, self.hidden_channels, upscale_factor = 2)
         # DUC upsample 2
         self.updense2_conv = nn.Sequential(
             nn.Conv2d(self.hidden_channels * 2, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
@@ -126,7 +127,7 @@ class DFNet(nn.Module):
             nn.ReLU(True)
         )
         self.updense2 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
-        self.updense2_duc = DenseUpsamplingConvolution(self.k, self.hidden_channels, upscale_factor = 2)
+        self.updense2_duc = self._make_upconv(self.k, self.hidden_channels, upscale_factor = 2)
         # DUC upsample 3
         self.updense3_conv = nn.Sequential(
             nn.Conv2d(self.hidden_channels * 2, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
@@ -134,7 +135,7 @@ class DFNet(nn.Module):
             nn.ReLU(True)
         )
         self.updense3 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
-        self.updense3_duc = DenseUpsamplingConvolution(self.k, self.hidden_channels, upscale_factor = 2)
+        self.updense3_duc = self._make_upconv(self.k, self.hidden_channels, upscale_factor = 2)
         # DUC upsample 4
         self.updense4_conv = nn.Sequential(
             nn.Conv2d(self.hidden_channels * 2, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
@@ -142,7 +143,7 @@ class DFNet(nn.Module):
             nn.ReLU(True)
         )
         self.updense4 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
-        self.updense4_duc = DenseUpsamplingConvolution(self.k, self.hidden_channels, upscale_factor = 2)
+        self.updense4_duc = self._make_upconv(self.k, self.hidden_channels, upscale_factor = 2)
         # Final
         self.final = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
@@ -151,6 +152,16 @@ class DFNet(nn.Module):
             nn.Conv2d(self.hidden_channels, 1, kernel_size = 3, stride = 1, padding = 1),
             nn.ReLU(True)
         )
+    
+    def _make_upconv(self, in_channels, out_channels, upscale_factor = 2):
+        if self.use_DUC:
+            return DenseUpsamplingConvolution(in_channels, out_channels, upscale_factor = upscale_factor)
+        else:
+            return nn.Sequential(
+                nn.ConvTranspose2d(in_channels, out_channels, kernel_size = upscale_factor, stride = upscale_factor, padding = 0, output_padding = 0),
+                nn.BatchNorm2d(out_channels, out_channels),
+                nn.ReLU(True)
+            )
     
     def forward(self, rgb, depth):
         # 720 x 1280 (rgb, depth) -> 360 x 640 (h)

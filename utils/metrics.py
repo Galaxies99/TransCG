@@ -25,7 +25,7 @@ class Metrics(object):
 
         - Threshold, masked threshold.
     """
-    def __init__(self, epsilon = 1e-8, depth_scale = 1.0, **kwargs):
+    def __init__(self, epsilon = 1e-8, depth_scale = 10.0, **kwargs):
         """
         Initialization.
 
@@ -276,7 +276,7 @@ class MetricsRecorder(object):
     """
     Metrics Recorder.
     """
-    def __init__(self, metrics_list, epsilon = 1e-8, **kwargs):
+    def __init__(self, metrics_list, epsilon = 1e-8, depth_scale = 10.0, **kwargs):
         """
         Initialization.
 
@@ -291,7 +291,8 @@ class MetricsRecorder(object):
         logging.setLoggerClass(ColoredLogger)
         self.logger = logging.getLogger(__name__)
         self.epsilon = epsilon
-        self.metrics = Metrics(epsilon = epsilon)
+        self.depth_scale = depth_scale
+        self.metrics = Metrics(epsilon = epsilon, depth_scale = depth_scale)
         self.metrics_list = []
         for metric in metrics_list:
             try:
