@@ -192,17 +192,17 @@ class ConfigBuilder(object):
         
         A torch.utils.data.Dataset item.
         """
-        from datasets.transparent_grasp import TransparentGrasp
+        from datasets.transcg import TransCG
         from datasets.cleargrasp import ClearGraspRealWorld, ClearGraspSynthetic
         from datasets.omniverse_object import OmniverseObject
         from datasets.transparent_object import TransparentObject
         if dataset_params is None:
             dataset_params = self.dataset_params
-        dataset_params = dataset_params.get(split, {'type': 'transparent-grasp'})
+        dataset_params = dataset_params.get(split, {'type': 'transcg'})
         if type(dataset_params) == dict:
-            dataset_type = dataset_params.get('type', 'transparent-grasp')
-            if dataset_type == 'transparent-grasp':
-                dataset = TransparentGrasp(split = split, **dataset_params)
+            dataset_type = str.lower(dataset_params.get('type', 'transcg'))
+            if dataset_type == 'transcg':
+                dataset = TransCG(split = split, **dataset_params)
             elif dataset_type == 'cleargrasp-real':
                 dataset = ClearGraspRealWorld(split = split, **dataset_params)
             elif dataset_type == 'cleargrasp-syn':
@@ -212,19 +212,19 @@ class ConfigBuilder(object):
             elif dataset_type == 'transparent-object':
                 dataset = TransparentObject(split = split, **dataset_params)
             else:
-                raise NotImplementedError('Invalid dataset type.')
+                raise NotImplementedError('Invalid dataset type: {}.'.format(dataset_type))
             logger.info('Load {} dataset as {}ing set with {} samples.'.format(dataset_type, split, len(dataset)))
         elif type(dataset_params) == list:
             dataset_types = []
             dataset_list = []
             for single_dataset_params in dataset_params:
-                dataset_type = single_dataset_params.get('type', 'transparent-grasp')
+                dataset_type = str.lower(single_dataset_params.get('type', 'transcg'))
                 if dataset_type in dataset_types:
                     raise AttributeError('Duplicate dataset found.')
                 else:
                     dataset_types.append(dataset_type)
-                if dataset_type == 'transparent-grasp':
-                    dataset = TransparentGrasp(split = split, **single_dataset_params)
+                if dataset_type == 'transcg':
+                    dataset = TransCG(split = split, **single_dataset_params)
                 elif dataset_type == 'cleargrasp-real':
                     dataset = ClearGraspRealWorld(split = split, **single_dataset_params)
                 elif dataset_type == 'cleargrasp-syn':
@@ -234,7 +234,7 @@ class ConfigBuilder(object):
                 elif dataset_type == 'transparent-object':
                     dataset = TransparentObject(split = split, **single_dataset_params)
                 else:
-                    raise NotImplementedError('Invalid dataset type.')
+                    raise NotImplementedError('Invalid dataset type: {}.'.format(dataset_type))
                 dataset_list.append(dataset)
                 logger.info('Load {} dataset as {}ing set with {} samples.'.format(dataset_type, split, len(dataset)))
             dataset = ConcatDataset(dataset_list)

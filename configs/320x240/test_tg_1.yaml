@@ -21,7 +21,7 @@
 "dataset":
   "train":
   "test":
-    "type": "transparent-grasp"
+    "type": "transcg"
     "data_dir": "data"
     "image_size": !!python/tuple [320, 240]
     "use_augmentation": False

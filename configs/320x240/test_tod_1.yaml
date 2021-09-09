@@ -25,8 +25,8 @@
     "data_dir": "data-keypose"
     "image_size": !!python/tuple [320, 240]
     "use_augmentation": False
-    "depth_min": 0.1
-    "depth_max": 1.5
+    "depth_min": 0.0
+    "depth_max": 10.0
 
 "dataloader":
   "num_workers": 48

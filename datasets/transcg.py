@@ -1,5 +1,5 @@
 """
-Transparent Grasp Dataset.
+TransCG Dataset.
 
 Author: Hongjie Fang.
 """
@@ -13,9 +13,9 @@ from torch.utils.data import Dataset
 from utils.data_preparation import process_data
 
 
-class TransparentGrasp(Dataset):
+class TransCG(Dataset):
     """
-    Transparent Grasp dataset.
+    TransCG dataset.
     """
     def __init__(self, data_dir, split = 'train', **kwargs):
         """
@@ -28,7 +28,7 @@ class TransparentGrasp(Dataset):
         
         split: str in ['train', 'test'], optional, default: 'train', the dataset split option.
         """
-        super(TransparentGrasp, self).__init__()
+        super(TransCG, self).__init__()
         if split not in ['train', 'test']:
             raise AttributeError('Invalid split option.')
         self.data_dir = data_dir
