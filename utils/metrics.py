@@ -25,7 +25,7 @@ class Metrics(object):
 
         - Threshold, masked threshold.
     """
-    def __init__(self, epsilon = 1e-8, depth_scale = 10.0, **kwargs):
+    def __init__(self, epsilon = 1e-8, depth_scale = 1.0, **kwargs):
         """
         Initialization.
 
@@ -338,14 +338,14 @@ class MetricsRecorder(object):
             self.metrics_recorder_dict[metric_name] += metrics_dict[metric_name] * metrics_dict['samples']
         self.metrics_recorder_dict['samples'] += metrics_dict['samples']
     
-    def evaluate_batch(self, pred, gt, gt_mask, use_gt_mask, record = True, *args, **kwargs):
+    def evaluate_batch(self, data_dict, record = True, *args, **kwargs):
         """
         Evaluate a batch of the samples.
 
         Parameters
         ----------
 
-        (pred, gt, gt_mask, use_gt_mask): a record, representing predicted depth image, ground-truth depth image, groud-truth mask and whether to use ground-truth mask respectively.
+        data_dict: a record, representing predicted depth image, ground-truth depth image, groud-truth mask and whether to use ground-truth mask respectively.
 
         record: bool, optional, default: True, whether to record the metrics of the batch of samples in the metric recorder.
 
@@ -354,12 +354,15 @@ class MetricsRecorder(object):
 
         The metrics dict of the batch of samples.
         """
+        pred = data_dict['pred']
+        gt = data_dict['depth_gt']
+        gt_mask = data_dict['depth_gt_mask']
+        zero_mask = data_dict['zero_mask']
         num_samples = gt.shape[0]
-        zero_mask = torch.where(torch.abs(gt) < self.epsilon, False, True)
         metrics_dict = {'samples': num_samples}
         for metric_line in self.metrics_list:
             metric_name, metric_func, metric_kwargs = metric_line
-            metrics_dict[metric_name] = metric_func(pred, gt, zero_mask, gt_mask, use_gt_mask, **metric_kwargs)
+            metrics_dict[metric_name] = metric_func(pred, gt, zero_mask, gt_mask, **metric_kwargs)
         if record:
             self._update_recorder_dict(metrics_dict)
         return metrics_dict

@@ -55,6 +55,7 @@ res = inferencer.inference(rgb, depth)
 cam_intrinsics = np.load('data/camera_intrinsics/camIntrinsics-D435.npy')
 
 res = np.clip(res, 0.1, 1.5)
+depth = np.clip(depth, 0.1, 1.5)
 
 cloud = draw_point_cloud(rgb, res, cam_intrinsics, scale = 1.0)
 

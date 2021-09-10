@@ -33,9 +33,6 @@ class TransCG(Dataset):
             raise AttributeError('Invalid split option.')
         self.data_dir = data_dir
         self.split = split
-        self.high_resolution = kwargs.get('high_resolution', False)
-        if self.high_resolution and split == 'train':
-            raise AttributeError('Does not support returning high resolution images during training. If you want to train on high resolution samples, please set image_size arguments in high resolution.')
         with open(os.path.join(self.data_dir, 'metadata.json'), 'r') as fp:
             self.dataset_metadata = json.load(fp)
         self.scene_num = self.dataset_metadata['total_scenes']
@@ -64,11 +61,14 @@ class TransCG(Dataset):
                 ])
         # Integrity double-check
         assert len(self.sample_info) == self.total_samples, "Error in total samples, expect {} samples, found {} samples.".format(self.total_samples, len(self.sample_info))
+        # Other parameters
+        self.cam_intrinsics = [None, np.load(os.path.join(self.data_dir, 'camera_intrinsics', 'camIntrinsics-D435.npy')), np.load(os.path.join(self.data_dir, 'camera_intrinsics', 'camIntrinsics-L515.npy'))]
         self.use_aug = kwargs.get('use_augmentation', True)
         self.rgb_aug_prob = kwargs.get('rgb_augmentation_probability', 0.8)
         self.image_size = kwargs.get('image_size', (1280, 720))
-        self.depth_min = kwargs.get('depth_min', 0.0)
-        self.depth_max = kwargs.get('depth_max', 10.0)
+        self.depth_min = kwargs.get('depth_min', 0.3)
+        self.depth_max = kwargs.get('depth_max', 1.5)
+        self.depth_norm = kwargs.get('depth_norm', 1.0)
 
     def __getitem__(self, id):
         img_path, camera_type, scene_type = self.sample_info[id]
@@ -76,7 +76,7 @@ class TransCG(Dataset):
         depth = np.array(Image.open(os.path.join(img_path, 'depth{}.png'.format(camera_type))), dtype = np.float32)
         depth_gt = np.array(Image.open(os.path.join(img_path, 'depth{}-gt.png'.format(camera_type))), dtype = np.float32)
         depth_gt_mask = np.array(Image.open(os.path.join(img_path, 'depth{}-gt-mask.png'.format(camera_type))), dtype = np.uint8)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type, camera_type, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, retain_original = self.high_resolution)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, self.cam_intrinsics[camera_type], scene_type, camera_type, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
     
     def __len__(self):
         return self.total_samples

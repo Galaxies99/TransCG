@@ -66,6 +66,7 @@ class Inferencer(object):
         
         self.image_size = self.builder.get_inference_image_size()
         self.depth_min, self.depth_max = self.builder.get_inference_depth_min_max()
+        self.depth_norm = self.builder.get_inference_depth_norm()
 
     def inference(self, rgb, depth, target_size = (1280, 720)):
         """
@@ -86,7 +87,10 @@ class Inferencer(object):
         
         rgb = cv2.resize(rgb, self.image_size, interpolation = cv2.INTER_NEAREST)
         depth = cv2.resize(depth, self.image_size, interpolation = cv2.INTER_NEAREST)
-        depth = (depth - self.depth_min) / (self.depth_max - self.depth_min)
+        depth = np.where(depth < self.depth_min, 0, depth)
+        depth = np.where(depth > self.depth_max, 0, depth)
+        depth[np.isnan(depth)] = 0
+        depth = depth / self.depth_norm
         rgb = (rgb / 255.0).transpose(2, 0, 1)
         rgb = torch.FloatTensor(rgb).to(self.device).unsqueeze(0)
         depth = torch.FloatTensor(depth).to(self.device).unsqueeze(0)
@@ -97,7 +101,7 @@ class Inferencer(object):
         if self.with_info:
             self.logger.info("Inference finished, time: {:.4f}s.".format(time_end - time_start))
         depth_res = depth_res.squeeze(0).cpu().detach().numpy()
-        depth_res = depth_res * (self.depth_max - self.depth_min) + self.depth_min
-        depth_res = cv2.resize(depth_res, target_size, interpolation = cv2.INTER_NEAREST)
+        depth_res = depth_res * self.depth_norm
+        depth_res = cv2.resize(depth_res, target_size, interpolation = cv2.INTER_LANCZOS4)
         return depth_res
     

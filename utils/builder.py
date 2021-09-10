@@ -392,9 +392,8 @@ class ConfigBuilder(object):
         if metrics_params is None:
             metrics_params = self.metrics_params
         metrics_list = metrics_params.get('types', ['MSE', 'MaskedMSE', 'RMSE', 'MaskedRMSE', 'REL', 'MaskedREL', 'MAE', 'MaskedMAE', 'Threshold@1.05', 'MaskedThreshold@1.05', 'Threshold@1.10', 'MaskedThreshold@1.10', 'Threshold@1.25', 'MaskedThreshold@1.25'])
-        metrics_epsilon = metrics_params.get('epsilon', 1e-8)
         from utils.metrics import MetricsRecorder
-        metrics = MetricsRecorder(metrics_list = metrics_list, epsilon = metrics_epsilon)
+        metrics = MetricsRecorder(metrics_list = metrics_list, **metrics_params)
         return metrics
     
     def get_inference_image_size(self, inference_params = None):
@@ -463,10 +462,29 @@ class ConfigBuilder(object):
         Returns
         -------
 
-        Tuple of (int, int) the min and max depth.
+        Tuple of (float, float) the min and max depth.
         """
         if inference_params is None:
             inference_params = self.inference_params
-        depth_min = inference_params.get('depth_min', 0.1)
+        depth_min = inference_params.get('depth_min', 0.3)
         depth_max = inference_params.get('depth_max', 1.5)
         return depth_min, depth_max
+    
+    def get_inference_depth_norm(self, inference_params = None):
+        """
+        Get the depth normalization coefficient from inference configuration.
+
+        Parameters
+        ----------
+
+        inference_params: dict, optional, default: None. If inference_params is provided, then use the parameters specified in the inference_params to get the inference depth range. Otherwise, the inference parameters in the self.params will be used to get the inference depth range.
+        
+        Returns
+        -------
+
+        float, the depth normalization coefficient.
+        """
+        if inference_params is None:
+            inference_params = self.inference_params
+        depth_norm = inference_params.get('depth_norm', 1.0)
+        return depth_norm

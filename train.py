@@ -15,7 +15,7 @@ from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
 from utils.constants import LOSS_INF
-from utils.functions import display_results
+from utils.functions import display_results, to_device
 from time import perf_counter
 
 
@@ -87,19 +87,19 @@ def train_one_epoch(epoch):
     model.train()
     losses = []
     with tqdm(train_dataloader) as pbar:
-        for data in pbar:
+        for data_dict in pbar:
             optimizer.zero_grad()
-            rgb, depth, depth_gt, depth_gt_mask, scene_mask = data
-            rgb = rgb.to(device)
-            depth = depth.to(device)
-            depth_gt = depth_gt.to(device)
-            depth_gt_mask = depth_gt_mask.to(device)
-            scene_mask = scene_mask.to(device)
-            res = model(rgb, depth)
-            loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
+            data_dict = to_device(data_dict, device)
+            res = model(data_dict['rgb'], data_dict['depth'])
+            data_dict['pred'] = res
+            loss_dict = criterion(data_dict)
+            loss = loss_dict['loss']
             loss.backward()
             optimizer.step()
-            pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.mean().item()))
+            if 'smooth' in loss_dict.keys():
+                pbar.set_description('Epoch {}, loss: {:.8f}, smooth loss: {:.8f}'.format(epoch + 1, loss.item(), loss_dict['smooth'].item()))
+            else:
+                pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.item()))
             losses.append(loss.mean().item())
     mean_loss = np.stack(losses).mean()
     logger.info('Finish training process in epoch {}, mean training loss: {:.8f}'.format(epoch + 1, mean_loss))
@@ -112,22 +112,22 @@ def test_one_epoch(epoch):
     running_time = []
     losses = []
     with tqdm(test_dataloader) as pbar:
-        for data in pbar:
-            rgb, depth, depth_gt, depth_gt_mask, scene_mask = data
-            rgb = rgb.to(device)
-            depth = depth.to(device)
-            depth_gt = depth_gt.to(device)
-            depth_gt_mask = depth_gt_mask.to(device)
-            scene_mask = scene_mask.to(device)
+        for data_dict in pbar:
+            data_dict = to_device(data_dict, device)
             with torch.no_grad():
                 time_start = perf_counter()
-                res = model(rgb, depth)
+                res = model(data_dict['rgb'], data_dict['depth'])
                 time_end = perf_counter()
-                loss = criterion(res, depth_gt, depth_gt_mask, scene_mask)
-                _ = metrics.evaluate_batch(res, depth_gt, depth_gt_mask, scene_mask, record = True)
+                data_dict['pred'] = res
+                loss_dict = criterion(data_dict)
+                loss = loss_dict['loss']
+                _ = metrics.evaluate_batch(data_dict, record = True)
             duration = time_end - time_start
-            pbar.set_description('Epoch {}, loss: {:.8f}, model time: {:.4f}s'.format(epoch + 1, loss.mean().item(), duration))
-            losses.append(loss.mean().item())
+            if 'smooth' in loss_dict.keys():
+                pbar.set_description('Epoch {}, loss: {:.8f}, smooth loss: {:.8f}'.format(epoch + 1, loss.item(), loss_dict['smooth'].item()))
+            else:
+                pbar.set_description('Epoch {}, loss: {:.8f}'.format(epoch + 1, loss.item()))
+            losses.append(loss.item())
             running_time.append(duration)
     mean_loss = np.stack(losses).mean()
     avg_running_time = np.stack(running_time).mean()

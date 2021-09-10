@@ -11,6 +11,8 @@ import Imath
 import random
 import OpenEXR
 import numpy as np
+from utils.functions import get_surface_normal_from_depth
+from utils.constants import DILATION_KERNEL
 
 
 def chromatic_transform(image):
@@ -92,7 +94,7 @@ def add_noise(image, level = 0.1):
     return noisy.astype('uint8')
 
 
-def exr_loader(exr_path, ndim=3, ndim_representation = ['R', 'G', 'B']):
+def exr_loader(exr_path, ndim = 3, ndim_representation = ['R', 'G', 'B']):
     """
     Loads a .exr file as a numpy array.
 
@@ -145,7 +147,7 @@ def exr_loader(exr_path, ndim=3, ndim_representation = ['R', 'G', 'B']):
         return exr_arr
 
 
-def process_depth(depth, camera_type = 0, depth_min = 0.1, depth_max = 1.5):
+def process_depth(depth, camera_type = 0, depth_min = 0.3, depth_max = 1.5, depth_norm = 1.0):
     """
     Process the depth information, including scaling, normalization and clear NaN values.
     
@@ -159,7 +161,9 @@ def process_depth(depth, camera_type = 0, depth_min = 0.1, depth_max = 1.5):
         - 1: scale 1000 (RealSense D415, RealSense D435, etc.);
         - 2: scale 4000 (RealSense L515).
     
-    depth_min, depth_max: int, optional, default: 0.1, 1.5, the min depth and the max depth;
+    depth_min, depth_max: int, optional, default: 0.3, 1.5, the min depth and the max depth;
+
+    depth_norm: float, optional, default: 1.0, the depth normalization coefficient.
 
     Returns
     -------
@@ -172,12 +176,29 @@ def process_depth(depth, camera_type = 0, depth_min = 0.1, depth_max = 1.5):
     if camera_type == 2:
         scale_coeff = 4000
     depth = depth / scale_coeff
-    depth = (np.clip(depth, depth_min, depth_max) - depth_min) / (depth_max - depth_min)
     depth[np.isnan(depth)] = 0.0
+    depth = np.where(depth < depth_min, 0, depth)
+    depth = np.where(depth > depth_max, 0, depth)
+    depth = depth / depth_norm
     return depth
 
 
-def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = 'train', image_size = (720, 1280), depth_min = 0.1, depth_max = 1.5, use_aug = True, rgb_aug_prob = 0.8, retain_original = False, **kwargs):
+def process_data(
+    rgb, 
+    depth, 
+    depth_gt, 
+    depth_gt_mask, 
+    camera_intrinsics, 
+    scene_type = "cluttered", 
+    camera_type = 0, 
+    split = 'train', 
+    image_size = (720, 1280), 
+    depth_min = 0.3, 
+    depth_max = 1.5,
+    depth_norm = 10,
+    use_aug = True, 
+    rgb_aug_prob = 0.8, 
+    **kwargs):
     """
     Process images and perform data augmentation.
 
@@ -191,6 +212,8 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     depth_gt: array, required, the ground-truth depth image;
     
     depth_gt_mask: array, required, the ground-truth depth image mask;
+
+    camera_intrinsics: array, required, the camera intrinsics of the image;
     
     scene_type: str in ['cluttered', 'isolated'], optional, default: 'cluttered', the scene type;
     
@@ -201,26 +224,25 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     
     split: str in ['train', 'test'], optional, default: 'train', the split of the dataset;
     
-    image_size: (int, int) tuple, optional, default: (720, 1280), the size of the image;
+    image_size: tuple of (int, int), optional, default: (720, 1280), the size of the image;
     
-    depth_min, depth_max: int, optional, default: 0.1, 1.5, the min depth and the max depth;
+    depth_min, depth_max: float, optional, default: 0.1, 1.5, the min depth and the max depth;
+
+    depth_norm: float, optional, default: 1.0, the depth normalization coefficient;
 
     use_aug: bool, optional, default: True, whether use data augmentation;
     
-    rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True);
-
-    retain_original: bool, optional, default: False, whether to retain original samples.
+    rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True).
 
     Returns
     -------
     
-    rgb, depth, depth_gt, depth_gt_mask, scene_mask tensors for training and testing.
+    data_dict for training and testing.
     """
 
-    if retain_original:
-        depth_original = process_depth(depth.copy(), camera_type = camera_type)
-        depth_gt_original = process_depth(depth_gt.copy(), camera_type = camera_type)
-        depth_gt_mask_original = depth_gt_mask.copy()
+    depth_original = process_depth(depth.copy(), camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm)
+    depth_gt_original = process_depth(depth_gt.copy(), camera_type = camera_type)
+    depth_gt_mask_original = depth_gt_mask.copy()
 
     rgb = cv2.resize(rgb, image_size, interpolation = cv2.INTER_NEAREST)
     depth = cv2.resize(depth, image_size, interpolation = cv2.INTER_NEAREST)
@@ -229,8 +251,8 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     depth_gt_mask = depth_gt_mask.astype(np.bool)
 
     # depth processing
-    depth = process_depth(depth, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max)
-    depth_gt = process_depth(depth_gt, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max)
+    depth = process_depth(depth, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm)
+    depth_gt = process_depth(depth_gt, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm)
 
     # RGB augmentation.
     if split == 'train' and use_aug and np.random.rand(1) > 1 - rgb_aug_prob:
@@ -263,9 +285,47 @@ def process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", 
     rgb = rgb.transpose(2, 0, 1)
 
     # process scene mask
-    scene_mask = np.array([1 if scene_type == 'cluttered' else 0], dtype = np.bool)
-    
-    if retain_original:
-        return torch.FloatTensor(rgb), torch.FloatTensor(depth), torch.FloatTensor(depth_gt), torch.BoolTensor(depth_gt_mask), torch.BoolTensor(scene_mask), torch.FloatTensor(depth_original), torch.FloatTensor(depth_gt_original), torch.BoolTensor(depth_gt_mask_original)
+    scene_mask = (scene_type == 'cluttered')
+
+    # zero mask
+    neg_zero_mask = np.where(depth_gt < 0.01, 255, 0).astype(np.uint8)
+    neg_zero_mask_dilated = cv2.dilate(neg_zero_mask, kernel = DILATION_KERNEL)
+    neg_zero_mask[neg_zero_mask != 0] = 1
+    neg_zero_mask_dilated[neg_zero_mask_dilated != 0] = 1
+    zero_mask = np.logical_not(neg_zero_mask)
+    zero_mask_dilated = np.logical_not(neg_zero_mask_dilated)
+
+    # loss mask
+    initial_loss_mask = np.logical_and(depth_gt_mask, zero_mask)
+    initial_loss_mask_dilated = np.logical_and(depth_gt_mask, zero_mask_dilated)
+    if scene_mask:
+        loss_mask = initial_loss_mask
+        loss_mask_dilated = initial_loss_mask_dilated
     else:
-        return torch.FloatTensor(rgb), torch.FloatTensor(depth), torch.FloatTensor(depth_gt), torch.BoolTensor(depth_gt_mask), torch.BoolTensor(scene_mask)
+        loss_mask = zero_mask
+        loss_mask_dilated = zero_mask_dilated
+
+    data_dict = {
+        'rgb': torch.FloatTensor(rgb),
+        'depth': torch.FloatTensor(depth),
+        'depth_gt': torch.FloatTensor(depth_gt),
+        'depth_gt_mask': torch.BoolTensor(depth_gt_mask),
+        'scene_mask': torch.tensor(scene_mask),
+        'zero_mask': torch.BoolTensor(zero_mask),
+        'zero_mask_dilated': torch.BoolTensor(zero_mask_dilated),
+        'initial_loss_mask': torch.BoolTensor(initial_loss_mask),
+        'initial_loss_mask_dilated': torch.BoolTensor(initial_loss_mask_dilated),
+        'loss_mask': torch.BoolTensor(loss_mask),
+        'loss_mask_dilated': torch.BoolTensor(loss_mask_dilated),
+        'depth_original': torch.FloatTensor(depth_original),
+        'depth_gt_original': torch.FloatTensor(depth_gt_original),
+        'depth_gt_mask_original': torch.BoolTensor(depth_gt_mask_original),
+        'fx': torch.tensor(camera_intrinsics[0, 0]),
+        'fy': torch.tensor(camera_intrinsics[1, 1]),
+        'cx': torch.tensor(camera_intrinsics[0, 2]),
+        'cy': torch.tensor(camera_intrinsics[1, 2])
+    }
+
+    data_dict['depth_gt_sn'] = get_surface_normal_from_depth(data_dict['depth_gt'].unsqueeze(0), data_dict['fx'].unsqueeze(0), data_dict['fy'].unsqueeze(0), data_dict['cx'].unsqueeze(0), data_dict['cy'].unsqueeze(0)).squeeze(0)
+
+    return data_dict
