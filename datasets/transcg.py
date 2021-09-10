@@ -76,7 +76,7 @@ class TransCG(Dataset):
         depth = np.array(Image.open(os.path.join(img_path, 'depth{}.png'.format(camera_type))), dtype = np.float32)
         depth_gt = np.array(Image.open(os.path.join(img_path, 'depth{}-gt.png'.format(camera_type))), dtype = np.float32)
         depth_gt_mask = np.array(Image.open(os.path.join(img_path, 'depth{}-gt-mask.png'.format(camera_type))), dtype = np.uint8)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, self.cam_intrinsics[camera_type], scene_type, camera_type, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, self.cam_intrinsics[camera_type], scene_type = scene_type, camera_type = camera_type, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
     
     def __len__(self):
         return self.total_samples

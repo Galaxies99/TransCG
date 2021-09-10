@@ -49,8 +49,9 @@ class OmniverseObject(Dataset):
         self.rgb_aug_prob = kwargs.get('rgb_augmentation_probability', 0.8)
         self.image_size = kwargs.get('image_size', (1280, 720))
         self.epsilon = kwargs.get('epsilon', 1e-8)
-        self.depth_min = kwargs.get('depth_min', 0.0)
-        self.depth_max = kwargs.get('depth_max', 10.0)
+        self.depth_min = kwargs.get('depth_min', 0.3)
+        self.depth_max = kwargs.get('depth_max', 1.5)
+        self.depth_norm = kwargs.get('depth_norm', 1.0)
            
     def get_transparent_mask(self, instance_mask, semantic_mask, instance_num, corrupt_all=False, ratio_low=0.4, ratio_high=0.8):
         """
@@ -98,7 +99,17 @@ class OmniverseObject(Dataset):
                     continue
                 corrupt_mask[sampled_nonzero_idx[:,0],sampled_nonzero_idx[:,1]] = 1
         return corrupt_mask
-    
+
+    def get_camera_intrinsics(self, cam_dataset, img_size):
+        img_h, img_w = img_size
+        focal_length = cam_dataset['focal_length'][:][0]
+        horizontal_aperture = cam_dataset['horizontal_aperture'][:][0]
+        vertical_aperture = cam_dataset['vertical_aperture'][:][0]
+        fx = focal_length / horizontal_aperture * img_w
+        fy = focal_length / vertical_aperture * img_h
+        cx = img_w // 2
+        cy = img_h // 2
+        return np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]]).astype(np.float32)
         
     def __getitem__(self, id):
         f = h5py.File(self.h5_paths[id], 'r')
@@ -119,7 +130,8 @@ class OmniverseObject(Dataset):
         depth_gt = np.clip(depth_gt, 0, 10)
         depth = depth_gt.copy() * (1 - depth_gt_mask)
         depth_gt_mask = depth_gt_mask.astype(np.uint8)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
+        camera_intrinsics = self.get_camera_intrinsics(f['camera'], (rgb.shape[0], rgb.shape[1]))
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob)
     
     def __len__(self):
         return len(self.h5_paths)
