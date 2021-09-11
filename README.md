@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 ### Quick Start
 
-Our pretrained checkpoints and configuration files are available here.
+Our pretrained checkpoints and configuration files are available [here](link).
 
 ### Configuration
 
@@ -52,4 +52,16 @@ python test.py --cfg [Configuration File]
 
 ### Inference
 
-For inference stage, there is a `Inferencer` class in `inference.py`, you can directly call it for inference. See `sample_inference.py` for details.
+For inference stage, there is a `Inferencer` class in `inference.py`, you can directly call it for inference. 
+
+**Example**. Given an `H x W x 3` RGB image `rgb`, and an `H x W` depth image `depth` (after scaling according to camera parameters), you can use the following code to get the refined depth according to our models.
+
+```python
+from inferencer import Inferencer
+# Initialize the inferencer. It is recommended to intiailize before starting your task for real-time performance.
+inferencer = Inferencer(cfg_file = 'configs/inference.yaml') # Specify your configuration file here.
+# Call inferencer for refined depth
+refine_depth = inferencer.inference(rgb, depth)
+```
+
+For full code sample, refer to `sample_inference.py`.
