@@ -1,6 +1,12 @@
-# Depth Filler Net (DFNet)
+# TransCG: A Large-Scale Real-World Dataset for Transparent ObjectDepth Completion and Grasping
 
-The official repository for **Transparent-Grasp: A Large-Scale Real-World Depth Completion Dataset for Transparent Object Grasping**.
+**Authors**: [Hongjie Fang](https://github.com/galaxies99/), [Hao-Shu Fang](https://github.com/fang-haoshu), [Sheng Xu](https://github.com/XS1020), [Cewu Lu](https://mvig.sjtu.edu.cn/).
+
+Welcome to the official repository for the TransCG paper. This repository includes the dataset and the proposed Depth Filler Net (DFNet) models.
+
+## TransCG Dataset
+
+TransCG dataset is available on [Google Drive](link) and [Baidu Netdisk](link).
 
 ## Requirements
 
@@ -22,6 +28,15 @@ pip install -r requirements.txt
 Our pretrained checkpoints and configuration files are available here.
 
 ### Configuration
+
+You need to create a configuration file for training, testing and inference. See [docs/configuration](docs/configuration.md) for details.
+
+### Dataset Preparation
+
+- **TransCG** (recommended): See [TransCG Dataset](#transcg-dataset) section;
+- **ClearGrasp** (syn and real): See [ClearGrasp official page](https://sites.google.com/view/cleargrasp);
+- **Omniverse Object Dataset**: See [implicit-depth official repository](https://github.com/NVlabs/implicit_depth);
+- **Transparent Object Dataset**: See [KeyPose official page](https://sites.google.com/view/keypose).
 
 ### Training
 
