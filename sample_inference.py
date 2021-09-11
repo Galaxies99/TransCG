@@ -45,8 +45,8 @@ def draw_point_cloud(color, depth, camera_intrinsics, use_mask = False, use_inpa
 
 inferencer = Inferencer()
 
-rgb = np.array(Image.open('data/scene15/3/rgb1.png'), dtype = np.float32)
-depth = np.array(Image.open('data/scene15/3/depth1.png'), dtype = np.float32)
+rgb = np.array(Image.open('data/scene1/1/rgb1.png'), dtype = np.float32)
+depth = np.array(Image.open('data/scene1/1/depth1.png'), dtype = np.float32)
 
 depth = depth / 1000
 

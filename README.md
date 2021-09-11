@@ -37,6 +37,4 @@ python test.py --cfg [Configuration File]
 
 ### Inference
 
-```bash
-python sample_inference.py --cfg [Configuration File]
-```
+For inference stage, there is a `Inferencer` class in `inference.py`, you can directly call it for inference. See `sample_inference.py` for details.

@@ -15,6 +15,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
+from utils.functions import to_device
 from time import perf_counter
 
 
@@ -58,9 +59,7 @@ if os.path.isfile(checkpoint_file):
 else:
     raise FileNotFoundError('No checkpoint.')
 
-criterion = builder.get_criterion()
 metrics = builder.get_metrics()
-
 
 def test():
     logger.info('Start testing process.')
@@ -69,32 +68,25 @@ def test():
     running_time = []
     losses = []
     with tqdm(test_dataloader) as pbar:
-        for data in pbar:
-            rgb, depth, _, _, scene_mask, _, depth_gt_ori, depth_gt_mask_ori = data
-            rgb = rgb.to(device)
-            depth = depth.to(device)
-            depth_gt_ori = depth_gt_ori.to(device)
-            depth_gt_mask_ori = depth_gt_mask_ori.to(device)
-            scene_mask = scene_mask.to(device)
+        for data_dict in pbar:
+            data_dict = to_device(data_dict, device)
             with torch.no_grad():
                 time_start = perf_counter()
-                res = model(rgb, depth)
+                res = model(data_dict['rgb'], data_dict['depth'])
                 res = res.squeeze(0).cpu().numpy()
-                res = cv2.resize(res, (1280, 720), interpolation = cv2.INTER_CUBIC)
-                res = torch.FloatTensor(res).to(device).unsqueeze(0)
+                res = cv2.resize(res, (1280, 720), interpolation = cv2.INTER_NEAREST)
+                res = torch.FloatTensor(res).to(data_dict['rgb'].device)
                 time_end = perf_counter()
-                loss = criterion(res, depth_gt_ori, depth_gt_mask_ori, scene_mask)
-                _ = metrics.evaluate_batch(res, depth_gt_ori, depth_gt_mask_ori, scene_mask, record = True)
+                data_dict['pred'] = res
+                _ = metrics.evaluate_batch(data_dict, record = True, original = True)
             duration = time_end - time_start
-            pbar.set_description('Loss: {:.8f}, model time: {:.4f}s'.format(loss.mean().item(), duration))
-            losses.append(loss.mean().item())
+            pbar.set_description('Time: {:.4f}s'.format(duration))
             running_time.append(duration)
-    mean_loss = np.stack(losses).mean()
     avg_running_time = np.stack(running_time).mean()
-    logger.info('Finish testing process, mean testing loss: {:.8f}, average running time: {:.4f}s'.format(mean_loss, avg_running_time))
+    logger.info('Finish testing process, average running time: {:.4f}s'.format(avg_running_time))
     metrics_result = metrics.get_results()
     metrics.display_results()
-    return mean_loss, metrics_result
+    return metrics_result
 
 
 if __name__ == '__main__':

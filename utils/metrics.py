@@ -338,7 +338,7 @@ class MetricsRecorder(object):
             self.metrics_recorder_dict[metric_name] += metrics_dict[metric_name] * metrics_dict['samples']
         self.metrics_recorder_dict['samples'] += metrics_dict['samples']
     
-    def evaluate_batch(self, data_dict, record = True, *args, **kwargs):
+    def evaluate_batch(self, data_dict, record = True, original = False, *args, **kwargs):
         """
         Evaluate a batch of the samples.
 
@@ -347,7 +347,9 @@ class MetricsRecorder(object):
 
         data_dict: a record, representing predicted depth image, ground-truth depth image, groud-truth mask and whether to use ground-truth mask respectively.
 
-        record: bool, optional, default: True, whether to record the metrics of the batch of samples in the metric recorder.
+        record: bool, optional, default: True, whether to record the metrics of the batch of samples in the metric recorder;
+
+        original: bool, optional, default: False, whether to use the original depths information to calculate metrics.
 
         Returns
         -------
@@ -355,9 +357,14 @@ class MetricsRecorder(object):
         The metrics dict of the batch of samples.
         """
         pred = data_dict['pred']
-        gt = data_dict['depth_gt']
-        gt_mask = data_dict['depth_gt_mask']
-        zero_mask = data_dict['zero_mask']
+        if not original:
+            gt = data_dict['depth_gt']
+            gt_mask = data_dict['depth_gt_mask']
+            zero_mask = data_dict['zero_mask']
+        else:
+            gt = data_dict['depth_gt_original']
+            gt_mask = data_dict['depth_gt_mask_original']
+            zero_mask = data_dict['zero_mask_original']
         num_samples = gt.shape[0]
         metrics_dict = {'samples': num_samples}
         for metric_line in self.metrics_list:

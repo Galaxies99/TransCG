@@ -102,6 +102,6 @@ class Inferencer(object):
             self.logger.info("Inference finished, time: {:.4f}s.".format(time_end - time_start))
         depth_res = depth_res.squeeze(0).cpu().detach().numpy()
         depth_res = depth_res * self.depth_norm
-        depth_res = cv2.resize(depth_res, target_size, interpolation = cv2.INTER_LANCZOS4)
+        depth_res = cv2.resize(depth_res, target_size, interpolation = cv2.INTER_NEAREST)
         return depth_res
     

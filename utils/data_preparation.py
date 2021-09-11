@@ -241,8 +241,9 @@ def process_data(
     """
 
     depth_original = process_depth(depth.copy(), camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm)
-    depth_gt_original = process_depth(depth_gt.copy(), camera_type = camera_type)
+    depth_gt_original = process_depth(depth_gt.copy(), camera_type = camera_type,  depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm)
     depth_gt_mask_original = depth_gt_mask.copy()
+    zero_mask_original = np.where(depth_gt_original < 0.01, False, True).astype(np.bool)
 
     rgb = cv2.resize(rgb, image_size, interpolation = cv2.INTER_NEAREST)
     depth = cv2.resize(depth, image_size, interpolation = cv2.INTER_NEAREST)
@@ -320,6 +321,7 @@ def process_data(
         'depth_original': torch.FloatTensor(depth_original),
         'depth_gt_original': torch.FloatTensor(depth_gt_original),
         'depth_gt_mask_original': torch.BoolTensor(depth_gt_mask_original),
+        'zero_mask_original': torch.BoolTensor(zero_mask_original),
         'fx': torch.tensor(camera_intrinsics[0, 0]),
         'fy': torch.tensor(camera_intrinsics[1, 1]),
         'cx': torch.tensor(camera_intrinsics[0, 2]),

@@ -81,9 +81,9 @@ def test():
                 _ = metrics.evaluate_batch(data_dict, record = True)
             duration = time_end - time_start
             if 'smooth' in loss_dict.keys():
-                pbar.set_description('Loss: {:.8f}, smooth loss: {:.8f}'.format(loss.item(), loss_dict['smooth'].item()))
+                pbar.set_description('Loss: {:.8f}, smooth loss: {:.8f}, time: {:.4f}s'.format(loss.item(), loss_dict['smooth'].item(), duration))
             else:
-                pbar.set_description('Loss: {:.8f}'.format(loss.item()))
+                pbar.set_description('Loss: {:.8f}, time: {:.4f}s'.format(loss.item(), duration))
             losses.append(loss.item())
             running_time.append(duration)
     mean_loss = np.stack(losses).mean()
