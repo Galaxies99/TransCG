@@ -23,11 +23,26 @@ class Criterion(nn.Module):
         self.combined_smooth = combined_smooth
         if combined_smooth:
             self.combined_beta = kwargs.get('combined_beta', 0.5)
+            self.combined_beta_decay = kwargs.get('combined_beta_decay', 0.1)
+            self.combined_beta_decay_milestones = kwargs.get('combined_beta_decay_milestones', [])
+            self.cur_epoch = kwargs.get('cur_epoch', 0)
+            for milestone in self.combined_beta_decay_milestones:
+                if milestone <= self.cur_epoch:
+                    self.combined_beta = self.combined_beta * self.combined_beta_decay
         self.l2_loss = self.mse_loss
         self.masked_l2_loss = self.masked_mse_loss
         self.custom_masked_l2_loss = self.custom_masked_mse_loss
         self.main_loss = getattr(self, type)
         self._mse = self._l2
+    
+    def step(self):
+        """
+        Increase current epoch by 1.
+        """
+        if self.combined_smooth:
+            self.cur_epoch += 1
+            if self.cur_epoch in self.combined_beta_decay_milestones:
+                self.combined_beta = self.combined_beta * self.combined_beta_decay
     
     def _l1(self, pred, gt):
         """

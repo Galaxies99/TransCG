@@ -58,7 +58,6 @@ if os.path.isfile(checkpoint_file):
 else:
     raise FileNotFoundError('No checkpoint.')
 
-criterion = builder.get_criterion()
 metrics = builder.get_metrics()
 
 
@@ -67,7 +66,6 @@ def test():
     model.eval()
     metrics.clear()
     running_time = []
-    losses = []
     with tqdm(test_dataloader) as pbar:
         for data_dict in pbar:
             data_dict = to_device(data_dict, device)
@@ -76,22 +74,15 @@ def test():
                 res = model(data_dict['rgb'], data_dict['depth'])
                 time_end = perf_counter()
                 data_dict['pred'] = res
-                loss_dict = criterion(data_dict)
-                loss = loss_dict['loss']
                 _ = metrics.evaluate_batch(data_dict, record = True)
             duration = time_end - time_start
-            if 'smooth' in loss_dict.keys():
-                pbar.set_description('Loss: {:.8f}, smooth loss: {:.8f}, time: {:.4f}s'.format(loss.item(), loss_dict['smooth'].item(), duration))
-            else:
-                pbar.set_description('Loss: {:.8f}, time: {:.4f}s'.format(loss.item(), duration))
-            losses.append(loss.item())
+            pbar.set_description('Time: {:.4f}s'.format(duration))
             running_time.append(duration)
-    mean_loss = np.stack(losses).mean()
     avg_running_time = np.stack(running_time).mean()
-    logger.info('Finish testing process, mean testing loss: {:.8f}, average running time: {:.4f}s'.format(mean_loss, avg_running_time))
+    logger.info('Finish testing process, average running time: {:.4f}s'.format(avg_running_time))
     metrics_result = metrics.get_results()
     metrics.display_results()
-    return mean_loss, metrics_result
+    return metrics_result
 
 
 if __name__ == '__main__':

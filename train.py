@@ -151,6 +151,7 @@ def train(start_epoch):
         loss, metrics_result = test_one_epoch(epoch)
         if lr_scheduler is not None:
             lr_scheduler.step()
+        criterion.step()
         save_dict = {
             'epoch': epoch + 1,
             'model_state_dict': model.module.state_dict() if builder.multigpu() else model.state_dict(),

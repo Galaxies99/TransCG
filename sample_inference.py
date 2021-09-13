@@ -47,8 +47,10 @@ inferencer = Inferencer()
 
 rgb = np.array(Image.open('data/scene1/1/rgb1.png'), dtype = np.float32)
 depth = np.array(Image.open('data/scene1/1/depth1.png'), dtype = np.float32)
+depth_gt = np.array(Image.open('data/scene1/1/depth1-gt.png'), dtype = np.float32)
 
 depth = depth / 1000
+depth_gt = depth_gt / 1000
 
 res = inferencer.inference(rgb, depth)
 
@@ -58,8 +60,10 @@ res = np.clip(res, 0.1, 1.5)
 depth = np.clip(depth, 0.1, 1.5)
 
 cloud = draw_point_cloud(rgb, res, cam_intrinsics, scale = 1.0)
+cloud_gt = draw_point_cloud(rgb, depth_gt, cam_intrinsics, scale = 1.0)
 
 frame = o3d.geometry.TriangleMesh.create_coordinate_frame(0.1)
 sphere = o3d.geometry.TriangleMesh.create_sphere(0.002,20).translate([0,0,0.490])
-o3d.visualization.draw_geometries([cloud, frame, sphere])
+o3d.visualization.draw_geometries([cloud, cloud_gt, frame, sphere])
+
 
