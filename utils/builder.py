@@ -345,16 +345,16 @@ class ConfigBuilder(object):
         Parameters
         ----------
 
-        trainer_params: dict, optional, default: None. If trainer_params is provided, then use the parameters specified in the trainer_params to get the multigpu flag. Otherwise, the trainer parameters in the self.params will be used to get the multigpu flag.
+        trainer_params: dict, optional, default: None. If trainer_params is provided, then use the parameters specified in the trainer_params to get the resume learning rate. Otherwise, the trainer parameters in the self.params will be used to get the resume learning rate.
 
         Returns
         -------
 
-        A float value, the resume lr (default: 0.001).
+        A float value, the resume learning rate (default: 0.001).
         """
         if trainer_params is None:
             trainer_params = self.trainer_params
-        return trainer_params.get('resume_lr', False)
+        return trainer_params.get('resume_lr', 0.001)
 
     def get_criterion(self, criterion_params = None):
         """

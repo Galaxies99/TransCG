@@ -4,7 +4,7 @@ Configuration files should be created for training, testing and inference. Our c
 
 ```yaml
 "model":
-  "type": # str (default: 'DFNet'), model type, now only support "DFNet".
+  "type": # str (default: "DFNet"), model type, now only support "DFNet".
   "params": # parameters for the model.
     "in_channels": # int (default: 4), the input channels of the model (default: 4).
     "hidden_channels": # int (default: 64), the hiden channels of the model.
@@ -13,16 +13,16 @@ Configuration files should be created for training, testing and inference. Our c
     "use_DUC": # bool (default: True), whether to use the DUC instead of the deconvolution in up-sampling process.
 
 "optimizer":
-  "type": # str (default: 'AdamW'), optimizer type, refer to objects in torch.optim.
+  "type": # str (default: "AdamW"), optimizer type, refer to objects in torch.optim.
   "params": # parameters for the optimizer, see specific optimizer parameters in torch for details.
 
 "lr_scheduler":
-  "type": # str (default: ''), learning rate scheduler type, refer to objects in torch.optim.lr_scheduler. Specially, '' for no learning rate scheduler.
+  "type": # str (default: ""), learning rate scheduler type, refer to objects in torch.optim.lr_scheduler. Specially, "" for no learning rate scheduler.
   "params": # parameters for the learning rate scheduler, see specific learning rate scheduler parameters in torch for details.
 
 "dataset":
   "train": # list or dict, one item for one dataset.
-    "type": # str (default: 'transcg'), dataset type, support type: ['transcg', 'cleargrasp-real', 'cleargrasp-syn', 'omniverse', 'transparent-object']
+    "type": # str (default: "transcg"), dataset type, support type: ["transcg", "cleargrasp-real", "cleargrasp-syn", "omniverse", "transparent-object"]
     "data_dir": # str, directory to the data
     "image_size": # tuple of (int, int) (default: (1280, 720)), the resolution of the data (samples will be scaled to this size and fed into the network).
     "use_augmentation": # bool (default: True), whether to use data augmentation.
@@ -44,8 +44,9 @@ Configuration files should be created for training, testing and inference. Our c
   "test_batch_size": # int (default: 1), batch size during testing.
   "multigpu": # bool (default: False), whether to use the multigpu for training/testing.
   "max_epoch": # int (default: 40), the number of epochs.
+  "resume_lr": # float (default: 0.001), the resume learning rate (only used when resume training from checkpoints).
   "criterion":
-    "type": # main loss type, support type: ['mse_loss', 'masked_mse_loss', 'custom_masked_mse_loss', 'l1_loss', 'masked_l1_loss', 'custom_masked_l1_loss', 'l2_loss', 'masked_l2_loss', 'custom_masked_l2_loss','huber_loss', 'masked_huber_loss', 'custom_masked_huber_loss']
+    "type": # main loss type, support type: ["mse_loss", "masked_mse_loss", "custom_masked_mse_loss", "l1_loss", "masked_l1_loss", "custom_masked_l1_loss", "l2_loss", "masked_l2_loss", "custom_masked_l2_loss","huber_loss", "masked_huber_loss", "custom_masked_huber_loss"]
     "epsilon": # float (default: 1e-8), the epsilon to avoid NaN during calculation.
     "huber_k": # float (default: 0.1) the k value in huber loss. The parameter is only used when using loss type concerning huber loss.
     "combined_smooth": # bool (default: False), whether to combine the smooth loss calculated by the cosine similarity between surface normals of ground-truth depth maps and predicted depth maps.
@@ -59,6 +60,15 @@ Configuration files should be created for training, testing and inference. Our c
   "depth_scale": # float (default: 1.0), the depth scale, should be the same as "depth_norm" in the testing set.
 
 "stats":
-  "stats_dir": # the directory to the statistics.
-  "stats_exper": # the experiment directory to the statistics.
+  "stats_dir": # str (default: "stats"), the directory to the statistics.
+  "stats_exper": # str (default: "default"), the experiment directory to the statistics. Notice that if the path is not empty and contains a "checkpoint.tar" file, then the training script will resume training from the checkpoint, and the testing script will test the model using the checkpoint.
+
+####### Only Used For Inference #######
+"inference":
+  "checkpoint_path": # str (default: "checkpoint/checkpoint.tar"), the path to the checkpoint.
+  "image_size": # pair of (int, int) (default: (320, 240)), the image size to feed into the network.
+  "cuda_id": # int (default: 0), the cuda ID.
+  "depth_min": # float (default: 0.3), the minimum depth.
+  "depth_max": # float (default: 1.5), the maximum depth
+  "depth_norm": # float (default: 1.0), the depth normalization coefficient.
 ```
