@@ -34,6 +34,8 @@ class ConfigBuilder(object):
         - build metrics from configuration;
         
         - fetch training parameters (e.g., max_epoch, multigpu) from configuration.
+
+        - fetch inferencer parameters (e.g., inference image size, inference checkpoint path, inference min depth and max depth, etc.)
     """
     def __init__(self, **params):
         """
@@ -265,7 +267,7 @@ class ConfigBuilder(object):
         from torch.utils.data import DataLoader
         if batch_size is None:
             if split == 'train':
-                batch_size = self.trainer_params.get('batch_size', 4)
+                batch_size = self.trainer_params.get('batch_size', 32)
             else:
                 batch_size = self.trainer_params.get('test_batch_size', 1)
         if dataloader_params is None:
@@ -289,11 +291,11 @@ class ConfigBuilder(object):
         Returns
         -------
         
-        An integer, which is the max epoch (default: 50).
+        An integer, which is the max epoch (default: 40).
         """
         if trainer_params is None:
             trainer_params = self.trainer_params
-        return trainer_params.get('max_epoch', 50)
+        return trainer_params.get('max_epoch', 40)
     
     def get_stats_dir(self, stats_params = None):
         """

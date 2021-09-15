@@ -15,6 +15,13 @@ The code has been tested under
 - Ubuntu 18.04 + NVIDIA GeForce RTX 3090 (CUDA 11.1)
 - PyTorch 1.9.0
 
+System dependencies can be installed by:
+
+```bash
+sudo apt-get install libhdf5-10 libhdf5-serial-dev libhdf5-dev libhdf5-cpp-11
+sudo apt install libopenexr-dev zlib1g-dev openexr
+```
+
 Other dependencies can be installed by
 
 ```bash

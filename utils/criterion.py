@@ -22,7 +22,7 @@ class Criterion(nn.Module):
             self.huber_k = kwargs.get('huber_k', 0.1)
         self.combined_smooth = combined_smooth
         if combined_smooth:
-            self.combined_beta = kwargs.get('combined_beta', 0.5)
+            self.combined_beta = kwargs.get('combined_beta', 0.005)
             self.combined_beta_decay = kwargs.get('combined_beta_decay', 0.1)
             self.combined_beta_decay_milestones = kwargs.get('combined_beta_decay_milestones', [])
             self.cur_epoch = kwargs.get('cur_epoch', 0)
