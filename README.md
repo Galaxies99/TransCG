@@ -36,7 +36,7 @@ Our pretrained checkpoints and configuration files are available [here](link).
 
 ### Configuration
 
-You need to create a configuration file for training, testing and inference. See [docs/configuration](docs/configuration.md) for details.
+You need to create a configuration file for training, testing and inference. See [assets/docs/configuration](assets/docs/configuration.md) for details.
 
 ### Dataset Preparation
 
