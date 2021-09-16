@@ -1,4 +1,4 @@
-# TransCG: A Large-Scale Real-World Dataset for Transparent ObjectDepth Completion and Grasping
+# TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping
 
 **Authors**: [Hongjie Fang](https://github.com/galaxies99/), [Hao-Shu Fang](https://github.com/fang-haoshu), [Sheng Xu](https://github.com/XS1020), [Cewu Lu](https://mvig.sjtu.edu.cn/).
 
@@ -45,18 +45,6 @@ You need to create a configuration file for training, testing and inference. See
 - **Omniverse Object Dataset**: See [implicit-depth official repository](https://github.com/NVlabs/implicit_depth);
 - **Transparent Object Dataset**: See [KeyPose official page](https://sites.google.com/view/keypose).
 
-### Training
-
-```bash
-python train.py --cfg [Configuration File]
-```
-
-### Testing
-
-```bash
-python test.py --cfg [Configuration File]
-```
-
 ### Inference
 
 For inference stage, there is a `Inferencer` class in `inference.py`, you can directly call it for inference. 
@@ -72,3 +60,33 @@ refine_depth = inferencer.inference(rgb, depth)
 ```
 
 For full code sample, refer to `sample_inference.py`.
+
+### Training (Optional)
+
+For training from scrach, you need to create a configuration file following instruction of [configuration section](#configuration). Then, execute the following commands to train your own model.
+
+```bash
+python train.py --cfg [Configuration File]
+```
+
+If you want to fine-tune your model from some checkpoints, you may need to provide `resume_lr` in configuration file. See [assets/docs/configuration](assets/docs/configuration.md) for details.
+
+### Testing (Optional)
+
+For model testing, you also need to create a configuration file following instruction of [configuration section](#configuration). Then, execute the following commands to test the model.
+
+```bash
+python test.py --cfg [Configuration File]
+```
+
+**Note**. For testing stage, the checkpoint specified in the configuration file should exist.
+
+## Citation
+
+```bibtex
+@article{fang2021transcg,
+    title   = {TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping},
+    author  = {Fang, Hongjie and Fang, Hao-Shu and Xu, Sheng and Lu, Cewu},
+    year    = {2021}
+}
+```
