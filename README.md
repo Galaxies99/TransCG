@@ -37,11 +37,11 @@ pip install -r requirements.txt
 
 ### Quick Start
 
-Our pretrained checkpoints and configuration files are available [here](link). You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional).
+Our pretrained checkpoints and configuration files are available [here](link). You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
 
 ### Grasping Demo
 
-To verify the depth completion results in robotic manip- ulation, we select the fundamental object grasping as the downstream task of our network. Here are the grasping demos.
+To verify the depth completion results in robotic manipulation, we select the fundamental object grasping as the downstream task of our network. Here are the grasping demos. Refer to [assets/docs/grasp.md](assets/docs/grasp.md) for details about the grasping method.
 
 <table>
   <tr><td><img src='assets/imgs/grasp-1.gif' width=256px></td><td><img src='assets/imgs/grasp-2.gif' width = 256px></td><td><img src='assets/imgs/grasp-3.gif' width=256px ></td></tr>
@@ -49,7 +49,7 @@ To verify the depth completion results in robotic manip- ulation, we select the 
 
 ### Configuration
 
-You need to create a configuration file for training, testing and inference. See [assets/docs/configuration](assets/docs/configuration.md) for details.
+You need to create a configuration file for training, testing and inference. See [assets/docs/configuration.md](assets/docs/configuration.md) for details.
 
 ### Dataset Preparation
 
@@ -82,7 +82,7 @@ For training from scrach, you need to create a configuration file following inst
 python train.py --cfg [Configuration File]
 ```
 
-If you want to fine-tune your model from some checkpoints, you may need to provide `resume_lr` in configuration file. See [assets/docs/configuration](assets/docs/configuration.md) for details.
+If you want to fine-tune your model from some checkpoints, you may need to provide `resume_lr` in configuration file. See [assets/docs/configuration.md](assets/docs/configuration.md) for details.
 
 ### Testing (Optional)
 
