@@ -6,8 +6,12 @@ Welcome to the official repository for the TransCG paper. This repository includ
 
 ## TransCG Dataset
 
-
 <img align="right" src="assets/imgs/TransCG.gif" width=240px> TransCG dataset is now available on [Google Drive](link) and [Baidu Netdisk](link). TransCG dataset is the first large-scale real-world dataset for transparent object depth completion and grasping. In total, our dataset contains 57,715 RGB-D images of 51 transparent objects and many opaque objects captured from different perspectives of 130 scenes under various real-world settings. The 3D mesh model of the transparent objects are also provided in our dataset.
+
+<table>
+  <tr><td><img src='assets/imgs/object.png' width=320px></td><td><img src='assets/imgs/tracking-system.gif' width = 256px></td><td><img src='assets/imgs/robot-collection.gif' width=256px ></td></tr>
+  <tr><td align="center"> Daily Transparent Objects in Dataset</td><td align="center"> Real-time Tracking System</td><td align="center">Robot Collection</td></tr>
+</table>
 
 ## Requirements
 
