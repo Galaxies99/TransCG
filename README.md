@@ -41,7 +41,7 @@ Our pretrained checkpoints and configuration files are available [here](link). Y
 
 ### Grasping Demo
 
-To verify the depth completion results in robotic manipulation, we select the fundamental object grasping as the downstream task of our network. Here are the grasping demos. Refer to [assets/docs/grasp.md](assets/docs/grasp.md) for details about the grasping method.
+To verify the depth completion results in robotic manipulation, we select the fundamental object grasping as the downstream task of our network. Here are the grasping demos. Refer to [assets/docs/grasping.md](assets/docs/grasping.md) for details about the grasping method.
 
 <table>
   <tr><td><img src='assets/imgs/grasp-1.gif' width=256px></td><td><img src='assets/imgs/grasp-2.gif' width = 256px></td><td><img src='assets/imgs/grasp-3.gif' width=256px ></td></tr>
