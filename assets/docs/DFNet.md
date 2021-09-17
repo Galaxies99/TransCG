@@ -10,11 +10,11 @@ The architecture of our proposed end-to-end depth completion network DFNet is sh
 
 ## Experiments
 
-<img align="center" src='../imgs/exper1.png' width=720px>
+<img align="middle" src='../imgs/exper1.png' width=720px>
 
 Experiments demonstrate superior efficacy, efficiency and robustness of our method over previous works, and it is able to process images of high resolutions under limited hardware resources, as shown in the following figures.
 
-<img align="center" src='../imgs/exper2.png' width=460px>
+<img align="middle" src='../imgs/exper2.png' width=460px>
 
 **Note**. In experiment tables above, ClearGrasp (or [34]) refers to "ClearGrasp: 3D Shape Estimation of Transparent Objects for Manipulation" (ICRA 2020), and LIDF-Refine (or [41]) refers to "RGB-D Local Implicit Function for Depth Completion of Transparent Objects" (CVPR 2021).
 

@@ -6,7 +6,7 @@ Given an RGB image along with a depth image collected by an RGB-D camera, we fir
 
 ## Experiments
 
-<img align="center" src='../imgs/exper3.png' width=460px>
+<img align="middle" src='../imgs/exper3.png' width=460px>
 
 ## Reference
 
