@@ -6,7 +6,7 @@ Welcome to the official repository for the TransCG paper. This repository includ
 
 ## TransCG Dataset
 
-<img align="right" src="assets/imgs/TransCG.gif" width=240px> TransCG dataset is now available on [Google Drive](link) and [Baidu Netdisk](link). TransCG dataset is the first large-scale real-world dataset for transparent object depth completion and grasping. In total, our dataset contains 57,715 RGB-D images of 51 transparent objects and many opaque objects captured from different perspectives of 130 scenes under various real-world settings. The 3D mesh model of the transparent objects are also provided in our dataset.
+<img align="right" src="assets/imgs/TransCG.gif" width=240px> TransCG dataset is now available on [official page](https://graspnet.net/transcg). TransCG dataset is the first large-scale real-world dataset for transparent object depth completion and grasping. In total, our dataset contains 57,715 RGB-D images of 51 transparent objects and many opaque objects captured from different perspectives of 130 scenes under various real-world settings. The 3D mesh model of the transparent objects are also provided in our dataset.
 
 <table>
   <tr><td><img src='assets/imgs/object.png' width=320px></td><td><img src='assets/imgs/tracking-system.gif' width = 256px></td><td><img src='assets/imgs/robot-collection.gif' width=256px ></td></tr>
@@ -37,7 +37,7 @@ pip install -r requirements.txt
 
 ### Quick Start
 
-Our pretrained checkpoints and configuration files are available [here](link). You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
+Our pretrained checkpoint is available on [Google Drive](https://drive.google.com/file/d/1juKNt5TgSmZ76w_7Ep_gIqXYD_hDMcSK/view?usp=sharing) or [Baidu Netdisk](https://pan.baidu.com/s/13DbDsdmZMe_M-yezGV5xow) (Code: s7ip). The checkpoint is trained with the default configuration in the `configs` folder. You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
 
 ### Grasping Demo
 
@@ -97,9 +97,9 @@ python test.py --cfg [Configuration File]
 ## Citation
 
 ```bibtex
-@article{fang2021transcg,
+@article{fang2022transcg,
     title   = {TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping},
     author  = {Fang, Hongjie and Fang, Hao-Shu and Xu, Sheng and Lu, Cewu},
-    year    = {2021}
+    year    = {2022}
 }
 ```
