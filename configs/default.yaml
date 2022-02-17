@@ -50,7 +50,7 @@
     "type": "custom_masked_mse_loss"
     "epsilon": 0.00000001
     "combined_smooth": True
-    "combined_beta": 0.005
+    "combined_beta": 0.001
 
 "metrics":
   "types": ["MSE", "MaskedMSE", "RMSE", "MaskedRMSE", "REL", "MaskedREL", "MAE", "MaskedMAE", "Threshold@1.05", "MaskedThreshold@1.05", "Threshold@1.10", "MaskedThreshold@1.10", "Threshold@1.25", "MaskedThreshold@1.25"]
