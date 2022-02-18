@@ -1,5 +1,7 @@
 # TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping
 
+[[Paper]](https://arxiv.org/pdf/2202.08471)
+
 **Authors**: [Hongjie Fang](https://github.com/galaxies99/), [Hao-Shu Fang](https://github.com/fang-haoshu), [Sheng Xu](https://github.com/XS1020), [Cewu Lu](https://mvig.sjtu.edu.cn/).
 
 Welcome to the official repository for the TransCG paper. This repository includes the dataset and the proposed Depth Filler Net (DFNet) models.
