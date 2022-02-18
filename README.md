@@ -100,6 +100,7 @@ python test.py --cfg [Configuration File]
 @article{fang2022transcg,
     title   = {TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping},
     author  = {Fang, Hongjie and Fang, Hao-Shu and Xu, Sheng and Lu, Cewu},
+    journal = {arXiv preprint arXiv:2202.08471}
     year    = {2022}
 }
 ```
