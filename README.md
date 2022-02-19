@@ -1,6 +1,6 @@
 # TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping
 
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/transcg-a-large-scale-real-world-dataset-for/transparent-object-depth-estimation-on)](https://paperswithcode.com/sota/transparent-object-depth-estimation-on?p=transcg-a-large-scale-real-world-dataset-for) [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 [[Paper]](https://arxiv.org/pdf/2202.08471)  [[Project Page]](https://graspnet.net/transcg)
 
