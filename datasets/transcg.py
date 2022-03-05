@@ -62,7 +62,7 @@ class TransCG(Dataset):
         # Integrity double-check
         assert len(self.sample_info) == self.total_samples, "Error in total samples, expect {} samples, found {} samples.".format(self.total_samples, len(self.sample_info))
         # Other parameters
-        self.cam_intrinsics = [None, np.load(os.path.join(self.data_dir, 'camera_intrinsics', 'camIntrinsics-D435.npy')), np.load(os.path.join(self.data_dir, 'camera_intrinsics', 'camIntrinsics-L515.npy'))]
+        self.cam_intrinsics = [None, np.load(os.path.join(self.data_dir, 'camera_intrinsics', '1-camIntrinsics-D435.npy')), np.load(os.path.join(self.data_dir, 'camera_intrinsics', '2-camIntrinsics-L515.npy'))]
         self.use_aug = kwargs.get('use_augmentation', True)
         self.rgb_aug_prob = kwargs.get('rgb_augmentation_probability', 0.8)
         self.image_size = kwargs.get('image_size', (1280, 720))
