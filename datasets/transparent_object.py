@@ -62,7 +62,7 @@ class TransparentObject(Dataset):
                             fx = float(str.split(line, ':')[1])
                         if 'fy' in line:
                             fy = float(str.split(line, ':')[1])
-                    assert cx is not None and cy is not None and fx is not None and fy is not None:
+                    assert cx is not None and cy is not None and fx is not None and fy is not None
                 self.camera_intrinsics[cur_path] = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]]).astype(np.float32)
         # Integrity double-check
         self.remove_damaged_samples()
