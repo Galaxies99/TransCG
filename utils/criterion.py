@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from utils.functions import get_surface_normal_from_depth
+from utils.functions import get_surface_normal_from_depth, safe_mean
 
 
 class Criterion(nn.Module):
@@ -80,7 +80,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['zero_mask']
-        return self._l2(pred, gt)[mask].mean()
+        return safe_mean(self._l2(pred, gt), mask)
     
     def masked_mse_loss(self, data_dict, *args, **kwargs):
         """
@@ -99,7 +99,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['initial_loss_mask']
-        return self._l2(pred, gt)[mask].mean()
+        return safe_mean(self._l2(pred, gt), mask)
     
     def custom_masked_mse_loss(self, data_dict, *args, **kwargs):
         """
@@ -118,7 +118,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['loss_mask']
-        return self._l2(pred, gt)[mask].mean()
+        return safe_mean(self._l2(pred, gt), mask)
     
     def l1_loss(self, data_dict, *args, **kwargs):
         """
@@ -137,7 +137,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['zero_mask']
-        return self._l1(pred, gt)[mask].mean()
+        return safe_mean(self._l1(pred, gt), mask)
     
     def masked_l1_loss(self, data_dict, *args, **kwargs):
         """
@@ -156,7 +156,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['initial_loss_mask']
-        return self._l1(pred, gt)[mask].mean()
+        return safe_mean(self._l1(pred, gt), mask)
     
     def custom_masked_l1_loss(self, data_dict, *args, **kwargs):
         """
@@ -175,7 +175,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['loss_mask']
-        return self._l1(pred, gt)[mask].mean()
+        return safe_mean(self._l1(pred, gt), mask)
     
     def huber_loss(self, data_dict, *args, **kwargs):
         """
@@ -194,7 +194,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['zero_mask']
-        return self._huber(pred, gt)[mask].mean()
+        return safe_mean(self._huber(pred, gt), mask)
 
     def masked_huber_loss(self, data_dict, *args, **kwargs):
         """
@@ -213,7 +213,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['initial_loss_mask']
-        return self._huber(pred, gt)[mask].mean()
+        return safe_mean(self._huber(pred, gt), mask)
     
     def custom_masked_huber_loss(self, data_dict, *args, **kwargs):
         """
@@ -232,7 +232,7 @@ class Criterion(nn.Module):
         pred = data_dict['pred']
         gt = data_dict['depth_gt']
         mask = data_dict['loss_mask']
-        return self._huber(pred, gt)[mask].mean()
+        return safe_mean(self._huber(pred, gt), mask)
     
     def smooth_loss(self, data_dict, *args, **kwargs):
         """
@@ -258,7 +258,7 @@ class Criterion(nn.Module):
         pred_sn = get_surface_normal_from_depth(pred, fx, fy, cx, cy, original_size = (original_w, original_h))
         sn_loss = 1 - F.cosine_similarity(pred_sn, depth_gt_sn, dim = 1)
         # masking
-        return sn_loss[mask].mean()
+        return safe_mean(sn_loss, mask)
 
     def forward(self, data_dict):
         """

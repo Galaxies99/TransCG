@@ -8,7 +8,7 @@ import torch
 import logging
 import numpy as np
 from utils.logger import ColoredLogger
-from utils.functions import display_results
+from utils.functions import display_results, safe_mean, safe_mean_without_inf
 
 
 class Metrics(object):
@@ -57,7 +57,7 @@ class Metrics(object):
         The MSE metric.
         """
         sample_mse = torch.sum(((pred - gt) ** 2) * zero_mask.float(), dim = [1, 2]) / torch.sum(zero_mask.float(), dim = [1, 2]) * self.depth_scale * self.depth_scale
-        return torch.mean(sample_mse).item()
+        return safe_mean_without_inf(sample_mse).item()
     
     def RMSE(self, pred, gt, zero_mask, *args, **kwargs):
         """
@@ -79,7 +79,7 @@ class Metrics(object):
         The RMSE metric.
         """
         sample_mse = torch.sum(((pred - gt) ** 2) * zero_mask.float(), dim = [1, 2]) / torch.sum(zero_mask.float(), dim = [1, 2]) * self.depth_scale * self.depth_scale
-        return torch.mean(torch.sqrt(sample_mse)).item()
+        return safe_mean_without_inf(torch.sqrt(sample_mse)).item()
     
     def MaskedMSE(self, pred, gt, zero_mask, gt_mask, *args, **kwargs):
         """
@@ -103,7 +103,7 @@ class Metrics(object):
         """
         mask = gt_mask & zero_mask
         sample_masked_mse = torch.sum(((pred - gt) ** 2) * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2]) * self.depth_scale * self.depth_scale
-        return torch.mean(sample_masked_mse).item()
+        return safe_mean_without_inf(sample_masked_mse).item()
     
     def MaskedRMSE(self, pred, gt, zero_mask, gt_mask, *args, **kwargs):
         """
@@ -127,7 +127,7 @@ class Metrics(object):
         """
         mask = gt_mask & zero_mask
         sample_masked_mse = torch.sum(((pred - gt) ** 2) * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2]) * self.depth_scale * self.depth_scale
-        return torch.mean(torch.sqrt(sample_masked_mse)).item()
+        return safe_mean_without_inf(torch.sqrt(sample_masked_mse)).item()
     
     def REL(self, pred, gt, zero_mask, *args, **kwargs):
         """
@@ -148,7 +148,7 @@ class Metrics(object):
         The REL metric.
         """
         sample_rel = torch.sum((torch.abs(pred - gt) / (gt + self.epsilon)) * zero_mask.float(), dim = [1, 2]) / torch.sum(zero_mask.float(), dim = [1, 2])
-        return torch.mean(sample_rel).item()
+        return safe_mean_without_inf(sample_rel).item()
     
     def MaskedREL(self, pred, gt, zero_mask, gt_mask, *args, **kwargs):
         """
@@ -172,7 +172,7 @@ class Metrics(object):
         """
         mask = gt_mask & zero_mask
         sample_masked_rel = torch.sum((torch.abs(pred - gt) / (gt + self.epsilon)) * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
-        return torch.mean(sample_masked_rel).item()
+        return safe_mean_without_inf(sample_masked_rel).item()
     
     def MAE(self, pred, gt, zero_mask, *args, **kwargs):
         """
@@ -192,7 +192,7 @@ class Metrics(object):
         The MAE metric.
         """
         sample_mae = torch.sum(torch.abs(pred - gt) * zero_mask.float(), dim = [1, 2]) / torch.sum(zero_mask.float(), dim = [1, 2]) * self.depth_scale
-        return torch.mean(sample_mae).item()
+        return safe_mean_without_inf(sample_mae).item()
     
     def MaskedMAE(self, pred, gt, zero_mask, gt_mask, *args, **kwargs):
         """
@@ -216,7 +216,7 @@ class Metrics(object):
         """
         mask = gt_mask & zero_mask
         sample_masked_mae = torch.sum(torch.abs(pred - gt) * mask.float(), dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2]) * self.depth_scale
-        return torch.mean(sample_masked_mae).item()
+        return safe_mean_without_inf(sample_masked_mae).item()
 
     def Threshold(self, pred, gt, zero_mask, *args, **kwargs):
         """
@@ -241,7 +241,7 @@ class Metrics(object):
         delta = kwargs.get('delta', 1.25)
         thres = torch.maximum(pred / (gt + self.epsilon), gt / pred)
         res = ((thres < delta) & zero_mask).float().sum(dim = [1, 2]) / torch.sum(zero_mask.float(), dim = [1, 2])
-        return torch.mean(res).item() * 100
+        return safe_mean_without_inf(res, 1.0).item() * 100
     
     def MaskedThreshold(self, pred, gt, zero_mask, gt_mask, *args, **kwargs):
         """
@@ -269,7 +269,7 @@ class Metrics(object):
         mask = gt_mask & zero_mask
         thres = torch.maximum(pred / (gt + self.epsilon), gt / pred)
         res = ((thres < delta) & mask).float().sum(dim = [1, 2]) / torch.sum(mask.float(), dim = [1, 2])
-        return torch.mean(res).item() * 100
+        return safe_mean_without_inf(res, 1.0).item() * 100
 
 
 class MetricsRecorder(object):

@@ -3,6 +3,7 @@ Useful Functions.
 
 Authors: Hongjie Fang.
 """
+from email.policy import default
 import torch
 import einops
 import numpy as np
@@ -162,3 +163,11 @@ def to_device(data_dict, device):
     for key in data_dict.keys():
         data_dict[key] = data_dict[key].to(device)
     return data_dict
+
+def safe_mean(data, mask, default_res = 0.0):
+    masked_data = data[mask]
+    return torch.tensor(default_res).to(masked_data.device) if masked_data.numel() == 0 else masked_data.mean()
+
+def safe_mean_without_inf(data, default_res = 0.0):
+    mask = torch.isfinite(data)
+    return safe_mean(data, mask, default_res = default_res)
