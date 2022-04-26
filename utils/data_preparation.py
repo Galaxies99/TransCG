@@ -192,12 +192,13 @@ def process_data(
     scene_type = "cluttered", 
     camera_type = 0, 
     split = 'train', 
-    image_size = (720, 1280), 
+    image_size = (1280, 720), 
     depth_min = 0.3, 
     depth_max = 1.5,
     depth_norm = 10,
     use_aug = True, 
     rgb_aug_prob = 0.8, 
+    with_original = False,
     **kwargs):
     """
     Process images and perform data augmentation.
@@ -232,7 +233,9 @@ def process_data(
 
     use_aug: bool, optional, default: True, whether use data augmentation;
     
-    rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True).
+    rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True);
+
+    with_original: bool, optional, default: False, whether to return original images.
 
     Returns
     -------
@@ -318,15 +321,17 @@ def process_data(
         'initial_loss_mask_dilated': torch.BoolTensor(initial_loss_mask_dilated),
         'loss_mask': torch.BoolTensor(loss_mask),
         'loss_mask_dilated': torch.BoolTensor(loss_mask_dilated),
-        'depth_original': torch.FloatTensor(depth_original),
-        'depth_gt_original': torch.FloatTensor(depth_gt_original),
-        'depth_gt_mask_original': torch.BoolTensor(depth_gt_mask_original),
-        'zero_mask_original': torch.BoolTensor(zero_mask_original),
         'fx': torch.tensor(camera_intrinsics[0, 0]),
         'fy': torch.tensor(camera_intrinsics[1, 1]),
         'cx': torch.tensor(camera_intrinsics[0, 2]),
         'cy': torch.tensor(camera_intrinsics[1, 2])
     }
+
+    if with_original:
+        data_dict['depth_original'] = torch.FloatTensor(depth_original)
+        data_dict['depth_gt_original'] = torch.FloatTensor(depth_gt_original)
+        data_dict['depth_gt_mask_original'] = torch.BoolTensor(depth_gt_mask_original)
+        data_dict['zero_mask_original'] = torch.BoolTensor(zero_mask_original)
 
     data_dict['depth_gt_sn'] = get_surface_normal_from_depth(data_dict['depth_gt'].unsqueeze(0), data_dict['fx'].unsqueeze(0), data_dict['fy'].unsqueeze(0), data_dict['cx'].unsqueeze(0), data_dict['cy'].unsqueeze(0)).squeeze(0)
 

@@ -71,6 +71,7 @@ class TransparentObject(Dataset):
         self.depth_min = kwargs.get('depth_min', 0.3)
         self.depth_max = kwargs.get('depth_max', 1.5)
         self.depth_norm = kwargs.get('depth_norm', 1.0)
+        self.with_original = kwargs.get('with_original', False)
     
     def remove_damaged_samples(self):
         damaged_list = [
@@ -104,7 +105,7 @@ class TransparentObject(Dataset):
         depth_gt_mask = rgba[..., 3].copy() # Not always available.
         depth_gt_mask[depth_gt_mask != 0] = 1
         camera_intrinsics = self.get_camera_intrinsics(id)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, camera_intrinsics, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = False)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, camera_intrinsics, scene_type = "isolated", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = False, with_original = self.with_original)
     
     def __len__(self):
         return len(self.image_paths)

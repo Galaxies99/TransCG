@@ -52,6 +52,7 @@ class OmniverseObject(Dataset):
         self.depth_min = kwargs.get('depth_min', 0.3)
         self.depth_max = kwargs.get('depth_max', 1.5)
         self.depth_norm = kwargs.get('depth_norm', 1.0)
+        self.with_original = kwargs.get('with_original', False)
            
     def get_transparent_mask(self, instance_mask, semantic_mask, instance_num, corrupt_all=False, ratio_low=0.4, ratio_high=0.8):
         """
@@ -131,7 +132,7 @@ class OmniverseObject(Dataset):
         depth = depth_gt.copy() * (1 - depth_gt_mask)
         depth_gt_mask = depth_gt_mask.astype(np.uint8)
         camera_intrinsics = self.get_camera_intrinsics(f['camera'], (rgb.shape[0], rgb.shape[1]))
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, camera_intrinsics = camera_intrinsics)
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, scene_type = "cluttered", camera_type = 0, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, camera_intrinsics = camera_intrinsics, with_original = self.with_original)
     
     def __len__(self):
         return len(self.h5_paths)
