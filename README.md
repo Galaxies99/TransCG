@@ -101,11 +101,15 @@ python test.py --cfg [Configuration File]
 ## Citation
 
 ```bibtex
-@article{fang2022transcg,
-    title   = {TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping},
+@ARTICLE{fang2022transcg,
     author  = {Fang, Hongjie and Fang, Hao-Shu and Xu, Sheng and Lu, Cewu},
-    journal = {arXiv preprint arXiv:2202.08471}
-    year    = {2022}
+    journal = {IEEE Robotics and Automation Letters}, 
+    title   = {TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and a Grasping Baseline}, 
+    year    = {2022},
+    volume  = {7},
+    number  = {3},
+    pages   = {7383-7390},
+    doi     = {10.1109/LRA.2022.3183256}
 }
 ```
 

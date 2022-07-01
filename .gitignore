@@ -5,6 +5,8 @@
 stats/
 data/
 data
+vis/
+vis.py
 
 
 # Byte-compiled / optimized / DLL files

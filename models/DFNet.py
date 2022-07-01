@@ -25,97 +25,97 @@ class DFNet(nn.Module):
         # First
         self.first = nn.Sequential(
             nn.Conv2d(self.in_channels, self.hidden_channels, kernel_size = 3, stride = 2, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # Dense1: skip
         self.dense1s_conv1 = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.dense1s = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
         self.dense1s_conv2 = nn.Sequential(
             nn.Conv2d(self.k, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # Dense1: normal
         self.dense1_conv1 = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.dense1 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
         self.dense1_conv2 = nn.Sequential(
             nn.Conv2d(self.k, self.hidden_channels, kernel_size = 3, stride = 2, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # Dense2: skip
         self.dense2s_conv1 = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.dense2s = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
         self.dense2s_conv2 = nn.Sequential(
             nn.Conv2d(self.k, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # Dense2: normal
         self.dense2_conv1 = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.dense2 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
         self.dense2_conv2 = nn.Sequential(
             nn.Conv2d(self.k, self.hidden_channels, kernel_size = 3, stride = 2, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # Dense3: skip
         self.dense3s_conv1 = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.dense3s = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
         self.dense3s_conv2 = nn.Sequential(
             nn.Conv2d(self.k, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # Dense3: normal
         self.dense3_conv1 = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.dense3 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
         self.dense3_conv2 = nn.Sequential(
             nn.Conv2d(self.k, self.hidden_channels, kernel_size = 3, stride = 2, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # Dense4
         self.dense4_conv1 = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.dense4 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
         self.dense4_conv2 = nn.Sequential(
             nn.Conv2d(self.k, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         # DUC upsample 1
         self.updense1_conv = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.updense1 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
@@ -123,7 +123,7 @@ class DFNet(nn.Module):
         # DUC upsample 2
         self.updense2_conv = nn.Sequential(
             nn.Conv2d(self.hidden_channels * 2, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.updense2 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
@@ -131,7 +131,7 @@ class DFNet(nn.Module):
         # DUC upsample 3
         self.updense3_conv = nn.Sequential(
             nn.Conv2d(self.hidden_channels * 2, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.updense3 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
@@ -139,7 +139,7 @@ class DFNet(nn.Module):
         # DUC upsample 4
         self.updense4_conv = nn.Sequential(
             nn.Conv2d(self.hidden_channels * 2, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True)
         )
         self.updense4 = DenseBlock(self.hidden_channels, self.L, self.k, with_bn = True)
@@ -147,7 +147,7 @@ class DFNet(nn.Module):
         # Final
         self.final = nn.Sequential(
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
-            nn.BatchNorm2d(self.hidden_channels, self.hidden_channels),
+            nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True),
             nn.Conv2d(self.hidden_channels, 1, kernel_size = 3, stride = 1, padding = 1),
             nn.ReLU(True)
@@ -159,7 +159,7 @@ class DFNet(nn.Module):
         else:
             return nn.Sequential(
                 nn.ConvTranspose2d(in_channels, out_channels, kernel_size = upscale_factor, stride = upscale_factor, padding = 0, output_padding = 0),
-                nn.BatchNorm2d(out_channels, out_channels),
+                nn.BatchNorm2d(out_channels),
                 nn.ReLU(True)
             )
     
@@ -170,7 +170,7 @@ class DFNet(nn.Module):
         h = self.first(torch.cat((rgb, depth), dim = 1))
 
         # dense1: 360 x 640 (h, depth1) -> 180 x 320 (h, depth2)
-        depth1 = F.interpolate(depth, scale_factor = 0.5, mode = "bilinear", align_corners = True)
+        depth1 = F.interpolate(depth, scale_factor = 0.5, mode = "nearest", align_corners = True)
         # dense1: skip
         h_d1s = self.dense1s_conv1(h)
         h_d1s = self.dense1s(torch.cat((h_d1s, depth1), dim = 1))
@@ -181,7 +181,7 @@ class DFNet(nn.Module):
         h = self.dense1_conv2(h)
 
         # dense2: 180 x 320 (h, depth2) -> 90 x 160 (h, depth3)
-        depth2 = F.interpolate(depth1, scale_factor = 0.5, mode = "bilinear", align_corners = True)
+        depth2 = F.interpolate(depth1, scale_factor = 0.5, mode = "nearest", align_corners = True)
         # dense2: skip
         h_d2s = self.dense2s_conv1(h)
         h_d2s = self.dense2s(torch.cat((h_d2s, depth2), dim = 1))
@@ -192,7 +192,7 @@ class DFNet(nn.Module):
         h = self.dense2_conv2(h)
         
         # dense3: 90 x 160 (h, depth3) -> 45 x 80 (h, depth4)
-        depth3 = F.interpolate(depth2, scale_factor = 0.5, mode = "bilinear", align_corners = True)
+        depth3 = F.interpolate(depth2, scale_factor = 0.5, mode = "nearest", align_corners = True)
         # dense3: skip
         h_d3s = self.dense3s_conv1(h)
         h_d3s = self.dense3s(torch.cat((h_d3s, depth3), dim = 1))
@@ -203,7 +203,7 @@ class DFNet(nn.Module):
         h = self.dense3_conv2(h)
 
         # dense4: 45 x 80
-        depth4 = F.interpolate(depth3, scale_factor = 0.5, mode = "bilinear", align_corners = True)
+        depth4 = F.interpolate(depth3, scale_factor = 0.5, mode = "nearest", align_corners = True)
         h = self.dense4_conv1(h)
         h = self.dense4(torch.cat((h, depth4), dim = 1))
         h = self.dense4_conv2(h)
