@@ -41,6 +41,8 @@ pip install -r requirements.txt
 
 ### Quick Start
 
+**NOTE.** The following checkpoint is compatible with [this version](https://github.com/Galaxies99/TransCG/tree/f80708ac4243e9f9d3f5a7b11afd863b21506f76). We will update the checkpoint of the latest version later.
+
 Our pretrained checkpoint is available on [Google Drive](https://drive.google.com/file/d/1APIuzIQmFucDP4RcmiNV-NEsQKqN9J57/view?usp=sharing) or [Baidu Netdisk](https://pan.baidu.com/s/14khejj63OjOKsyzxnuYo5Q) (Code: c01g). The checkpoint is trained with the default configuration in the `configs` folder. You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
 
 ### Grasping Demo

@@ -170,7 +170,7 @@ class DFNet(nn.Module):
         h = self.first(torch.cat((rgb, depth), dim = 1))
 
         # dense1: 360 x 640 (h, depth1) -> 180 x 320 (h, depth2)
-        depth1 = F.interpolate(depth, scale_factor = 0.5, mode = "nearest", align_corners = True)
+        depth1 = F.interpolate(depth, scale_factor = 0.5, mode = "nearest")
         # dense1: skip
         h_d1s = self.dense1s_conv1(h)
         h_d1s = self.dense1s(torch.cat((h_d1s, depth1), dim = 1))
@@ -181,7 +181,7 @@ class DFNet(nn.Module):
         h = self.dense1_conv2(h)
 
         # dense2: 180 x 320 (h, depth2) -> 90 x 160 (h, depth3)
-        depth2 = F.interpolate(depth1, scale_factor = 0.5, mode = "nearest", align_corners = True)
+        depth2 = F.interpolate(depth1, scale_factor = 0.5, mode = "nearest")
         # dense2: skip
         h_d2s = self.dense2s_conv1(h)
         h_d2s = self.dense2s(torch.cat((h_d2s, depth2), dim = 1))
@@ -192,7 +192,7 @@ class DFNet(nn.Module):
         h = self.dense2_conv2(h)
         
         # dense3: 90 x 160 (h, depth3) -> 45 x 80 (h, depth4)
-        depth3 = F.interpolate(depth2, scale_factor = 0.5, mode = "nearest", align_corners = True)
+        depth3 = F.interpolate(depth2, scale_factor = 0.5, mode = "nearest")
         # dense3: skip
         h_d3s = self.dense3s_conv1(h)
         h_d3s = self.dense3s(torch.cat((h_d3s, depth3), dim = 1))
@@ -203,7 +203,7 @@ class DFNet(nn.Module):
         h = self.dense3_conv2(h)
 
         # dense4: 45 x 80
-        depth4 = F.interpolate(depth3, scale_factor = 0.5, mode = "nearest", align_corners = True)
+        depth4 = F.interpolate(depth3, scale_factor = 0.5, mode = "nearest")
         h = self.dense4_conv1(h)
         h = self.dense4(torch.cat((h, depth4), dim = 1))
         h = self.dense4_conv2(h)
