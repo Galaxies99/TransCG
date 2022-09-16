@@ -27,6 +27,7 @@
     "depth_min": 0.3
     "depth_max": 1.5
     "depth_norm": 1.0
+    "with_original": True
   "test":
     "type": "transcg"
     "data_dir": "data"
@@ -35,6 +36,7 @@
     "depth_min": 0.3
     "depth_max": 1.5
     "depth_norm": 1.0
+    "with_original": True
 
 "dataloader":
   "num_workers": 48
