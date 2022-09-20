@@ -2,11 +2,23 @@
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/transcg-a-large-scale-real-world-dataset-for/transparent-object-depth-estimation-on)](https://paperswithcode.com/sota/transparent-object-depth-estimation-on?p=transcg-a-large-scale-real-world-dataset-for) [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
-[[Paper]](https://arxiv.org/pdf/2202.08471)  [[Project Page]](https://graspnet.net/transcg)
+[[Paper (IEEE Xplore)]](https://ieeexplore.ieee.org/document/9796631) [[Paper (arXiv)]](https://arxiv.org/pdf/2202.08471) [[Project Page]](https://graspnet.net/transcg)
 
 **Authors**: [Hongjie Fang](https://github.com/galaxies99/), [Hao-Shu Fang](https://github.com/fang-haoshu), [Sheng Xu](https://github.com/XS1020), [Cewu Lu](https://mvig.sjtu.edu.cn/).
 
 Welcome to the official repository for the TransCG paper. This repository includes the dataset and the proposed Depth Filler Net (DFNet) models.
+
+## News
+
+2022-09-20: New checkpoint is released. Check the [Quick Start](#quick-start) section for details.
+
+2022-09-16: New version of DFNet code is released. Many thanks to [@cxt98](https://github.com/cxt98) for fixing the bugs and [@haberger](https://github.com/haberger) for mentioning it.
+
+2022-06-15: Our TransCG paper is published in IEEE Robotics and Automation Letters Vol. 7, No. 3, 2022, and is available at [IEEE Xplore](https://ieeexplore.ieee.org/document/9796631).
+
+2022-06-01: Our TransCG paper is accepted by RA-L.
+
+2022-02-17: Our paper is released on [arXiv](https://arxiv.org/pdf/2202.08471), and submitted to IEEE Robotics and Automation Letters (RA-L).
 
 ## TransCG Dataset
 
@@ -41,9 +53,7 @@ pip install -r requirements.txt
 
 ### Quick Start
 
-**NOTE.** The following checkpoint is compatible with [this version](https://github.com/Galaxies99/TransCG/tree/f80708ac4243e9f9d3f5a7b11afd863b21506f76). We will update the checkpoint of the latest version later.
-
-Our pretrained checkpoint is available on [Google Drive](https://drive.google.com/file/d/1APIuzIQmFucDP4RcmiNV-NEsQKqN9J57/view?usp=sharing) or [Baidu Netdisk](https://pan.baidu.com/s/14khejj63OjOKsyzxnuYo5Q) (Code: c01g). The checkpoint is trained with the default configuration in the `configs` folder. You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
+Our pretrained checkpoint is available on [Google Drive](https://drive.google.com/file/d/1VRLkNus9Da1NK6q5F038Va9NSO9YBUwu/view?usp=sharing) or [Baidu Netdisk](https://pan.baidu.com/s/1QJBYMQD7DmLUwUWfwqOWwQ) (Code: ldbk). The checkpoint is trained with the default configuration in the `configs` folder. You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
 
 ### Grasping Demo
 
