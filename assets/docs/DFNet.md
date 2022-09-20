@@ -15,9 +15,9 @@ The architecture of our proposed end-to-end depth completion network DFNet is sh
 | ClearGrasp | 0.054 | 0.083 | 0.037 | 50.48 | 68.68 | 95.28 | 2.1 GB | 2.2813s | 934 MB |
 | LIDF-Refine | 0.019 | 0.034 | 0.015 | 78.22 | 94.26 | **99.80** | 6.2 GB | 0.0182s | 251 MB |
 | TranspareNet* | 0.026 | **0.023** | 0.013 | **88.45** | **96.25** | 99.42 | 1.9 GB | 0.0354s | 336 MB |
-| DFNet** (ours) | **0.018** | 0.027 | **0.012** | 83.70 | 95.96 | 99.72 | **1.6 GB** | **0.0166s** | **5.2 MB** |
+| DFNet** | **0.018** | 0.027 | **0.012** | 83.70 | 95.96 | 99.72 | **1.6 GB** | **0.0166s** | **5.2 MB** |
 
-Here, ClearGrasp refers to [1], LIDF-Refine refers to [2] and TranspareNet refers to [3].
+Here, ClearGrasp refers to [1], LIDF-Refine refers to [2], TranspareNet refers to [3], and DFNet refers to our proposed Depth Filler Net.
 
 *: TranspareNet [3] is a concurrent work with our project.
 
