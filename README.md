@@ -1,4 +1,4 @@
-# TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and Grasping
+# TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and a Grasping Baseline
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
