@@ -7,7 +7,7 @@
     "k": 12
 
 "inference":
-  "checkpoint_path": "stats/train-tg-val-tg-comb/checkpoint.tar"
+  "checkpoint_path": "stats/train-tg-val-tg-comb-old/checkpoint.tar"
   "image_size": !!python/tuple [320, 240]
   "cuda_id": 0
   "depth_min": 0.3

@@ -1,4 +1,4 @@
-# TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and a Grasping Baseline
+# TransCG: A Large-Scale Real-World Dataset for Transparent Object Depth Completion and A Grasping Baseline
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
@@ -10,7 +10,9 @@ Welcome to the official repository for the TransCG paper. This repository includ
 
 ## News
 
-2022-09-20: New checkpoint is released. Check the [Quick Start](#quick-start) section for details.
+2022-10-02: For a stable checkpoint that corresponds to the paper, please see [this version](https://github.com/Galaxies99/TransCG/tree/f80708ac4243e9f9d3f5a7b11afd863b21506f76) of our repository. Shifting problems in this version may be solved by calculating the difference of the average depth before and after refining, and then subtract the difference from the refining depths.
+
+2022-09-20: New checkpoint (**not stable yet**) is released. Check the [Quick Start](#quick-start) section for details.
 
 2022-09-16: New version of DFNet code is released. Many thanks to [@cxt98](https://github.com/cxt98) for fixing the bugs and [@haberger](https://github.com/haberger) for mentioning it.
 
