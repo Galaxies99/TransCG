@@ -13,6 +13,7 @@ import OpenEXR
 import numpy as np
 from utils.functions import get_surface_normal_from_depth
 from utils.constants import DILATION_KERNEL
+from scipy.interpolate import NearestNDInterpolator
 
 
 def chromatic_transform(image):
@@ -147,7 +148,25 @@ def exr_loader(exr_path, ndim = 3, ndim_representation = ['R', 'G', 'B']):
         return exr_arr
 
 
-def process_depth(depth, camera_type = 0, depth_min = 0.3, depth_max = 1.5, depth_norm = 1.0):
+def depth_inpainting(depth):
+    mask = np.where(depth > 0)
+    if mask[0].shape[0] != 0:
+        interp = NearestNDInterpolator(np.transpose(mask), depth[mask])
+        depth = interp(*np.indices(depth.shape))
+    return depth
+
+def process_depth(
+    depth, 
+    camera_type = 0, 
+    depth_min = 0.3, 
+    depth_max = 1.5, 
+    depth_norm = 1.0, 
+    depth_mu = None,
+    depth_std = None,
+    depth_coeff = 10.0, 
+    return_mu_std = False,
+    inpainting = False
+):
     """
     Process the depth information, including scaling, normalization and clear NaN values.
     
@@ -163,7 +182,17 @@ def process_depth(depth, camera_type = 0, depth_min = 0.3, depth_max = 1.5, dept
     
     depth_min, depth_max: int, optional, default: 0.3, 1.5, the min depth and the max depth;
 
-    depth_norm: float, optional, default: 1.0, the depth normalization coefficient.
+    depth_norm: float, optional, default: 1.0, the depth normalization coefficient;
+
+    depth_mu, depth_std: float, optional, default: None, specify the mu and std of depth, set None to use automatic detection;
+
+    depth_coeff: float, optional, default: 10.0, set the depth out of range [avg - coeff * std, avg + coeff * std] to 0 (unavailable);
+
+    return_depth_mu_std: optional, default: False, whether to return the mu and std of depth specified before; 
+
+    inpainting: bool, optional, default: False, whether to inpaint the missing pixels;
+
+    return_mu_std:
 
     Returns
     -------
@@ -179,7 +208,18 @@ def process_depth(depth, camera_type = 0, depth_min = 0.3, depth_max = 1.5, dept
     depth[np.isnan(depth)] = 0.0
     depth = np.where(depth < depth_min, 0, depth)
     depth = np.where(depth > depth_max, 0, depth)
+    depth_available = depth[depth > 0]
+    if depth_mu is None:
+        depth_mu = depth_available.mean() if depth_available.shape[0] != 0 else 0
+    if depth_std is None:
+        depth_std = depth_available.std() if depth_available.shape[0] != 0 else 1
+    depth = np.where(depth < depth_mu - depth_coeff * depth_std, 0, depth)
+    depth = np.where(depth > depth_mu + depth_coeff * depth_std, 0, depth)
+    if inpainting:
+        depth = depth_inpainting(depth)
     depth = depth / depth_norm
+    if return_mu_std:
+        return depth, depth_mu, depth_std
     return depth
 
 
@@ -198,6 +238,8 @@ def process_data(
     depth_norm = 10,
     use_aug = True, 
     rgb_aug_prob = 0.8, 
+    depth_coeff = 10.0,
+    inpainting = False,
     with_original = False,
     **kwargs):
     """
@@ -235,6 +277,10 @@ def process_data(
     
     rgb_aug_prob: float, optional, default: 0.8, the rgb augmentation probability (only applies when use_aug is set to True);
 
+    depth_coeff: float, optional, default: 10.0, set the depth out of range [avg - coeff * std, avg + coeff * std] to 0 (unavailable);
+
+    inpainting: bool, optional, default: False, whether to inpaint the missing pixels;
+
     with_original: bool, optional, default: False, whether to return original images.
 
     Returns
@@ -255,8 +301,8 @@ def process_data(
     depth_gt_mask = depth_gt_mask.astype(np.bool)
 
     # depth processing
-    depth = process_depth(depth, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm)
-    depth_gt = process_depth(depth_gt, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm)
+    depth, d_mu, d_std = process_depth(depth, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm, depth_mu = None, depth_std = None, depth_coeff = depth_coeff, return_mu_std = True, inpainting = inpainting)
+    depth_gt = process_depth(depth_gt, camera_type = camera_type, depth_min = depth_min, depth_max = depth_max, depth_norm = depth_norm, depth_mu = d_mu, depth_std = d_std, depth_coeff = depth_coeff, return_mu_std = False, inpainting = False)
 
     # RGB augmentation.
     if split == 'train' and use_aug and np.random.rand(1) > 1 - rgb_aug_prob:
@@ -299,9 +345,15 @@ def process_data(
     zero_mask = np.logical_not(neg_zero_mask)
     zero_mask_dilated = np.logical_not(neg_zero_mask_dilated)
 
+    # inpainting depth now
+    depth_gt = depth_inpainting(depth_gt)
+
     # loss mask
     initial_loss_mask = np.logical_and(depth_gt_mask, zero_mask)
     initial_loss_mask_dilated = np.logical_and(depth_gt_mask, zero_mask_dilated)
+    
+    loss_mask = initial_loss_mask
+    loss_mask_dilated = initial_loss_mask_dilated
     if scene_mask:
         loss_mask = initial_loss_mask
         loss_mask_dilated = initial_loss_mask_dilated
@@ -309,9 +361,16 @@ def process_data(
         loss_mask = zero_mask
         loss_mask_dilated = zero_mask_dilated
 
+    # Normalization
+    depth_min = depth.min() - 0.5 * depth.std() - 1e-6
+    depth_max = depth.max() + 0.5 * depth.std() + 1e-6
+    depth = (depth - depth_min) / (depth_max - depth_min)
+
     data_dict = {
         'rgb': torch.FloatTensor(rgb),
         'depth': torch.FloatTensor(depth),
+        'depth_min': torch.tensor(depth_min),
+        'depth_max': torch.tensor(depth_max),
         'depth_gt': torch.FloatTensor(depth_gt),
         'depth_gt_mask': torch.BoolTensor(depth_gt_mask),
         'scene_mask': torch.tensor(scene_mask),

@@ -52,12 +52,12 @@ depth_gt = np.array(Image.open('data/scene1/1/depth1-gt.png'), dtype = np.float3
 depth = depth / 1000
 depth_gt = depth_gt / 1000
 
-res = inferencer.inference(rgb, depth)
+res, depth = inferencer.inference(rgb, depth, depth_coefficient = 3, inpainting = True)
 
 cam_intrinsics = np.load('data/camera_intrinsics/1-camIntrinsics-D435.npy')
 
-res = np.clip(res, 0.1, 1.5)
-depth = np.clip(depth, 0.1, 1.5)
+res = np.clip(res, 0.3, 1.0)
+depth = np.clip(depth, 0.3, 1.0)
 
 cloud = draw_point_cloud(rgb, res, cam_intrinsics, scale = 1.0)
 cloud_gt = draw_point_cloud(rgb, depth_gt, cam_intrinsics, scale = 1.0)

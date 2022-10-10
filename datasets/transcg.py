@@ -51,13 +51,15 @@ class TransCG(Dataset):
                 self.sample_info.append([
                     os.path.join(self.data_dir, 'scene{}'.format(scene_id), '{}'.format(perspective_id)),
                     1, # (for D435)
-                    scene_type
+                    scene_type,
+                    perspective_id
                 ])
             for perspective_id in self.scene_metadata[scene_id]['L515_valid_perspective_list']:
                 self.sample_info.append([
                     os.path.join(self.data_dir, 'scene{}'.format(scene_id), '{}'.format(perspective_id)),
                     2, # (for L515)
-                    scene_type
+                    scene_type,
+                    perspective_id
                 ])
         # Integrity double-check
         assert len(self.sample_info) == self.total_samples, "Error in total samples, expect {} samples, found {} samples.".format(self.total_samples, len(self.sample_info))
@@ -72,12 +74,16 @@ class TransCG(Dataset):
         self.with_original = kwargs.get('with_original', False)
 
     def __getitem__(self, id):
-        img_path, camera_type, scene_type = self.sample_info[id]
+        img_path, camera_type, scene_type, perspective_id = self.sample_info[id]
         rgb = np.array(Image.open(os.path.join(img_path, 'rgb{}.png'.format(camera_type))), dtype = np.float32)
         depth = np.array(Image.open(os.path.join(img_path, 'depth{}.png'.format(camera_type))), dtype = np.float32)
         depth_gt = np.array(Image.open(os.path.join(img_path, 'depth{}-gt.png'.format(camera_type))), dtype = np.float32)
         depth_gt_mask = np.array(Image.open(os.path.join(img_path, 'depth{}-gt-mask.png'.format(camera_type))), dtype = np.uint8)
-        return process_data(rgb, depth, depth_gt, depth_gt_mask, self.cam_intrinsics[camera_type], scene_type = scene_type, camera_type = camera_type, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, with_original = self.with_original)
+        if camera_type == 1:
+            depth_coeff = (perspective_id // 20) / 12 + 1
+        else:
+            depth_coeff = 1
+        return process_data(rgb, depth, depth_gt, depth_gt_mask, self.cam_intrinsics[camera_type], scene_type = scene_type, camera_type = camera_type, split = self.split, image_size = self.image_size, depth_min = self.depth_min, depth_max = self.depth_max, depth_norm = self.depth_norm, use_aug = self.use_aug, rgb_aug_prob = self.rgb_aug_prob, depth_coeff = depth_coeff, inpainting = True, with_original = self.with_original)
     
     def __len__(self):
         return self.total_samples

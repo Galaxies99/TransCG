@@ -149,8 +149,7 @@ class DFNet(nn.Module):
             nn.Conv2d(self.hidden_channels, self.hidden_channels, kernel_size = 3, stride = 1, padding = 1),
             nn.BatchNorm2d(self.hidden_channels),
             nn.ReLU(True),
-            nn.Conv2d(self.hidden_channels, 1, kernel_size = 3, stride = 1, padding = 1),
-            nn.ReLU(True)
+            nn.Conv2d(self.hidden_channels, 1, kernel_size = 1, stride = 1)
         )
     
     def _make_upconv(self, in_channels, out_channels, upscale_factor = 2):

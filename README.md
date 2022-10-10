@@ -10,9 +10,9 @@ Welcome to the official repository for the TransCG paper. This repository includ
 
 ## News
 
-2022-10-02: For a stable checkpoint that corresponds to the paper, please see [this version](https://github.com/Galaxies99/TransCG/tree/f80708ac4243e9f9d3f5a7b11afd863b21506f76) of our repository. Shifting problems in this version may be solved by calculating the difference of the average depth before and after refining, and then subtract the difference from the refining depths.
+2022-10-10: New checkpoint and source code released. Check the [Quick Start](#quick-start) section for details. This checkpoint and source code fixes the shifting problem to a large extent (now only ~2cm shifting, which can be solved further using many engineering methods), and use interpolation to solve the empty hole problem. Many thanks to [@haojieh](https://github.com/haojieh) and [@mtbui2010](https://github.com/mtbui2010) for mentioning it. The new checkpoint has improved several metrics, see details in [assets/docs/DFNet.md](assets/docs/DFNet.md).
 
-2022-09-20: New checkpoint (**not stable yet**) is released. Check the [Quick Start](#quick-start) section for details.
+2022-10-02: For checkpoint and source code that correspond to the paper, please see [this version](https://github.com/Galaxies99/TransCG/tree/f80708ac4243e9f9d3f5a7b11afd863b21506f76) of our repository. Shifting problems in this version may be solved by calculating the difference of the average depth before and after refining, and then subtract the difference from the refining depths.
 
 2022-09-16: New version of DFNet code is released. Many thanks to [@cxt98](https://github.com/cxt98) for fixing the bugs and [@haberger](https://github.com/haberger) for mentioning it.
 
@@ -55,7 +55,7 @@ pip install -r requirements.txt
 
 ### Quick Start
 
-Our pretrained checkpoint is available on [Google Drive](https://drive.google.com/file/d/1VRLkNus9Da1NK6q5F038Va9NSO9YBUwu/view?usp=sharing) or [Baidu Netdisk](https://pan.baidu.com/s/1QJBYMQD7DmLUwUWfwqOWwQ) (Code: ldbk). The checkpoint is trained with the default configuration in the `configs` folder. You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
+Our pretrained checkpoint is available on [Google Drive](https://drive.google.com/file/d/1deGliJDgRKxktDK4o1ap4y7L7TsRFBCe/view?usp=sharing) or [Baidu Netdisk](https://pan.baidu.com/s/1wywQqZK1nxRKwhGhpkocDw) (Code: gj3a). The checkpoint is trained with the default configuration in the `configs` folder. You can use our released checkpoints for [inference](#inference) or [testing](#testing-optional). Refer to [assets/docs/DFNet.md](assets/docs/DFNet.md) for details about the depth completion network.
 
 ### Grasping Demo
 

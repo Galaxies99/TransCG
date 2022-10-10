@@ -15,6 +15,7 @@ from tqdm import tqdm
 from utils.logger import ColoredLogger
 from utils.builder import ConfigBuilder
 from time import perf_counter
+from scipy.interpolate import NearestNDInterpolator
 
 
 class Inferencer(object):
@@ -68,7 +69,7 @@ class Inferencer(object):
         self.depth_min, self.depth_max = self.builder.get_inference_depth_min_max()
         self.depth_norm = self.builder.get_inference_depth_norm()
 
-    def inference(self, rgb, depth, target_size = (1280, 720)):
+    def inference(self, rgb, depth, target_size = (1280, 720), depth_coefficient = 10.0, inpainting = True):
         """
         Inference.
 
@@ -77,7 +78,11 @@ class Inferencer(object):
 
         rgb, depth: the initial RGB-D image;
 
-        target_size: tuple of (int, int), optional, default: (1280, 720), the target depth image size.
+        target_size: tuple of (int, int), optional, default: (1280, 720), the target depth image size;
+        
+        depth_coefficient: float, optional, default: 10.0, only regard [depth_mu - depth_coefficient * depth_std, depth_mu + depth_coefficient * depth_std] as the valid pixels;
+
+        inpainting: bool, default: True, whether to inpaint the invalid pixels.
 
         Returns
         -------
@@ -90,7 +95,20 @@ class Inferencer(object):
         depth = np.where(depth < self.depth_min, 0, depth)
         depth = np.where(depth > self.depth_max, 0, depth)
         depth[np.isnan(depth)] = 0
+        depth_available = depth[depth > 0]
+        depth_mu = depth_available.mean() if depth_available.shape[0] != 0 else 0
+        depth_std = depth_available.std() if depth_available.shape[0] != 0 else 1
+        depth = np.where(depth < depth_mu - depth_coefficient * depth_std, 0, depth)
+        depth = np.where(depth > depth_mu + depth_coefficient * depth_std, 0, depth)
+        if inpainting:
+            mask = np.where(depth > 0)
+            if mask[0].shape[0] != 0:
+                interp = NearestNDInterpolator(np.transpose(mask), depth[mask])
+                depth = interp(*np.indices(depth.shape))
         depth = depth / self.depth_norm
+        depth_min = depth.min() - 0.5 * depth.std() - 1e-6
+        depth_max = depth.max() + 0.5 * depth.std() + 1e-6
+        depth = (depth - depth_min) / (depth_max - depth_min)
         rgb = (rgb / 255.0).transpose(2, 0, 1)
         rgb = torch.FloatTensor(rgb).to(self.device).unsqueeze(0)
         depth = torch.FloatTensor(depth).to(self.device).unsqueeze(0)
@@ -101,7 +119,12 @@ class Inferencer(object):
         if self.with_info:
             self.logger.info("Inference finished, time: {:.4f}s.".format(time_end - time_start))
         depth_res = depth_res.squeeze(0).cpu().detach().numpy()
+        depth_ori = depth.squeeze(0).cpu().detach().numpy()
+        depth_res = depth_res * (depth_max - depth_min) + depth_min
+        depth_ori = depth_ori * (depth_max - depth_min) + depth_min
         depth_res = depth_res * self.depth_norm
+        depth_ori = depth_ori * self.depth_norm
         depth_res = cv2.resize(depth_res, target_size, interpolation = cv2.INTER_NEAREST)
-        return depth_res
+        depth_ori = cv2.resize(depth_ori, target_size, interpolation = cv2.INTER_NEAREST)
+        return depth_res, depth_ori
     

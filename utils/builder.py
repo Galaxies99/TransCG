@@ -479,7 +479,7 @@ class ConfigBuilder(object):
         Parameters
         ----------
 
-        inference_params: dict, optional, default: None. If inference_params is provided, then use the parameters specified in the inference_params to get the inference depth range. Otherwise, the inference parameters in the self.params will be used to get the inference depth range.
+        inference_params: dict, optional, default: None. If inference_params is provided, then use the parameters specified in the inference_params to get the inference depth normalization coefficient. Otherwise, the inference parameters in the self.params will be used to get the inference depth normalization coefficient.
         
         Returns
         -------

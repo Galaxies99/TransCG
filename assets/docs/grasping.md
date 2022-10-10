@@ -6,8 +6,6 @@ Given an RGB image along with a depth image collected by an RGB-D camera, we fir
 
 ## Experiments
 
-<img align="middle" src='../imgs/exper3.png' width=460px>
-
 ## Reference
 
 1. Fang, Hao-Shu, et al. "Graspnet-1billion: A large-scale benchmark for general object grasping." Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2020.
