@@ -90,7 +90,9 @@ def train_one_epoch(epoch):
         for data_dict in pbar:
             optimizer.zero_grad()
             data_dict = to_device(data_dict, device)
-            res = model(data_dict['rgb'], data_dict['depth'])
+            res = model(data_dict['rgb'], data_dict['depth']) 
+            depth_scale = data_dict['depth_max'] - data_dict['depth_min']
+            res = res * depth_scale.reshape(-1, 1, 1) + data_dict['depth_min'].reshape(-1, 1, 1)
             data_dict['pred'] = res
             loss_dict = criterion(data_dict)
             loss = loss_dict['loss']
@@ -118,6 +120,8 @@ def test_one_epoch(epoch):
                 time_start = perf_counter()
                 res = model(data_dict['rgb'], data_dict['depth'])
                 time_end = perf_counter()
+                depth_scale = data_dict['depth_max'] - data_dict['depth_min']
+                res = res * depth_scale.reshape(-1, 1, 1) + data_dict['depth_min'].reshape(-1, 1, 1)
                 data_dict['pred'] = res
                 loss_dict = criterion(data_dict)
                 loss = loss_dict['loss']

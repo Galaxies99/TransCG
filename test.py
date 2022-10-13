@@ -73,6 +73,8 @@ def test():
                 time_start = perf_counter()
                 res = model(data_dict['rgb'], data_dict['depth'])
                 time_end = perf_counter()
+                depth_scale = data_dict['depth_max'] - data_dict['depth_min']
+                res = res * depth_scale.reshape(-1, 1, 1) + data_dict['depth_min'].reshape(-1, 1, 1)
                 data_dict['pred'] = res
                 _ = metrics.evaluate_batch(data_dict, record = True)
             duration = time_end - time_start
