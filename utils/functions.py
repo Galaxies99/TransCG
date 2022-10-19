@@ -3,7 +3,6 @@ Useful Functions.
 
 Authors: Hongjie Fang.
 """
-from email.policy import default
 import torch
 import einops
 import numpy as np
